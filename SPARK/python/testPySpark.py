@@ -5,7 +5,7 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 #from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
-from pyspark.sql.functions import col, split, expr
+from pyspark.sql.functions import col, expr, split, concat, lit
 
 # Definisci lo schema dei dati di input
 laptime_schema = StructType([
@@ -17,23 +17,28 @@ lapTimeTotal_df = None
 LastLapTime_df = None
 
 
-
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
     df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("Lap as Lap", "LastLapTime as LapTime")
-
+    print("check1")
     # Convert LapTime to milliseconds
-    df = df.withColumn("LapTimeMillis", expr("split(LapTime, ':')[0].cast('int') * 60000 + split(LapTime, ':')[1].cast('int') * 1000 + split(LapTime, ':')[2].cast('int')"))
-
+    df = df.withColumn("minutes", split(col("LapTime"), ":")[0].cast("int"))
+    df = df.withColumn("seconds", split(col("LapTime"), ":")[1].cast("int"))
+    df = df.withColumn("milliseconds", split(col("LapTime"), ":")[2].cast("int"))
+    df = df.withColumn("LapTimeMillis", expr("minutes * 60000 + seconds * 1000 + milliseconds"))
+    print("check2")
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
     lr = LinearRegression(featuresCol="features", labelCol="LapTimeMillis", predictionCol="predictedLapTimeMillis")
     pipeline = Pipeline(stages=[vectorAssembler, lr])
-
+    print("check3")
     (trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
     model = pipeline.fit(trainingData)
 
     predictions = model.transform(testData)
-    predictions = predictions.withColumn("predictedLapTime", expr("concat_ws(':', floor(predictedLapTimeMillis / 60000), floor((predictedLapTimeMillis % 60000) / 1000), predictedLapTimeMillis % 1000)"))
+    predictions = predictions.withColumn("predictedMinutes", (col("predictedLapTimeMillis") / 60000).cast("int"))
+    predictions = predictions.withColumn("predictedSeconds", ((col("predictedLapTimeMillis") % 60000) / 1000).cast("int"))
+    predictions = predictions.withColumn("predictedMilliseconds", (col("predictedLapTimeMillis") % 1000))
+    predictions = predictions.withColumn("predictedLapTime", concat(col("predictedMinutes"), lit(":"), col("predictedSeconds"), lit("."), col("predictedMilliseconds")))
 
     predictions.select("Lap", "LapTime", "predictedLapTime").show()
 
