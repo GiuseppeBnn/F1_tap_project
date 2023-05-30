@@ -28,7 +28,7 @@ def linearRegression(pilotNumber):
     df = df.withColumn("LapTimeMillis", expr("minutes * 60000 + seconds * 1000 + milliseconds"))
     print("check2")
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
-    lr = LinearRegression(featuresCol="features", labelCol="LapTimeMillis", predictionCol="predictedLapTimeMillis")
+    lr = LinearRegression(featuresCol="features", labelCol="LapTimeMillis", predictionCol="predictedLapTimeMillis", regParam=0.01)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("check3")
     (trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
