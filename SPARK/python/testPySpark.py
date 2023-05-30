@@ -12,7 +12,8 @@ laptime_schema = StructType([
     StructField("LastLapTime", StringType(), nullable=True),
     StructField("Lap", IntegerType(), nullable=True)
 ])
-
+lapTimeTotal_df = None
+LastLapTime_df = None
 
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
@@ -40,12 +41,15 @@ def updateLapTimeTotal(df : DataFrame, epoch_id):
     if df.count() != 0:
         lapTimeTotal_df = lapTimeTotal_df.union(df)
         lapTimeTotal_df.show()
-        limited_df = lapTimeTotal_df.limit(25)
+        limited_df = lapTimeTotal_df.limit(30)
         LastLapTime_df2 = limited_df.groupBy("PilotNumber").agg(max("Lap").alias("Lap"))
         LastLapTime_df2 = LastLapTime_df2.join(limited_df, ["PilotNumber", "Lap"], "inner")
         print("LastLapTime_df2")
         LastLapTime_df2.show()
     #lapTimeTotal_df.groupBy("PilotNumber").agg(min("LastLapTime").alias("BestLapTime")).show()
+    #lapTimeTotal_df.groupBy("PilotNumber").agg(avg("LastLapTime").alias("AvgLapTime")).show()
+        for row in df.collect():
+            linearRegression(str(row.PilotNumber))
     
     
 
@@ -56,8 +60,9 @@ def main():
     spark.sparkContext.setLogLevel("WARN")
     
     global lapTimeTotal_df
+    
     lapTimeTotal_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), laptime_schema)
-    global LastLapTime_df
+    global LastLapTime_df  
     LastLapTime_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), laptime_schema)
 
     #df = spark \
