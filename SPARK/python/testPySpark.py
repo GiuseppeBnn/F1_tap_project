@@ -3,8 +3,9 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
-from pyspark.ml.evaluation import RegressionEvaluator
+#from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
+from pyspark.sql.functions import col, split, expr
 
 # Definisci lo schema dei dati di input
 laptime_schema = StructType([
@@ -15,19 +16,27 @@ laptime_schema = StructType([
 lapTimeTotal_df = None
 LastLapTime_df = None
 
+
+
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
-    df=lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("Lap as Lap", "LastLapTime as LapTime")
+    df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("Lap as Lap", "LastLapTime as LapTime")
 
-    vectorAssembler = VectorAssembler(inputCols=["Lap"],outputCol="features")   
-    lr = LinearRegression(featuresCol="features",labelCol="LapTime",predictionCol="predictedLapTime")
+    # Convert LapTime to milliseconds
+    df = df.withColumn("LapTimeMillis", expr("split(LapTime, ':')[0].cast('int') * 60000 + split(LapTime, ':')[1].cast('int') * 1000 + split(LapTime, ':')[2].cast('int')"))
+
+    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
+    lr = LinearRegression(featuresCol="features", labelCol="LapTimeMillis", predictionCol="predictedLapTimeMillis")
     pipeline = Pipeline(stages=[vectorAssembler, lr])
 
     (trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
     model = pipeline.fit(trainingData)
 
     predictions = model.transform(testData)
-    predictions.select("Lap","LapTime","predictedLapTime").show()
+    predictions = predictions.withColumn("predictedLapTime", expr("concat_ws(':', floor(predictedLapTimeMillis / 60000), floor((predictedLapTimeMillis % 60000) / 1000), predictedLapTimeMillis % 1000)"))
+
+    predictions.select("Lap", "LapTime", "predictedLapTime").show()
+
  
 
 
