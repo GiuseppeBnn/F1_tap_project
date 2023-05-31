@@ -1,5 +1,5 @@
 from pyspark.sql.functions import *
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
@@ -22,9 +22,7 @@ def linearRegression(pilotNumber):
     df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("Lap as Lap", "LastLapTime as LapTime")
     print("check1")
     df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(0) * 60 + split(col("LapTime"), ":").getItem(1)))
-    df = df.withColumn("LapTimeMillis", (split(col("LapTime"),".").getItem(1)))
-    df = df.withColumn("Time", concat(col("Seconds"), lit("."), col("LapTimeMillis")))
-    df = df.withColumn("Time", col("Time").cast("float"))
+    df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
     df.show()
     #print("check2")
     #vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
