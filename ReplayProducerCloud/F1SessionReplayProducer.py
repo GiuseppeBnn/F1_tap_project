@@ -113,9 +113,9 @@ def ISOToFloat(datestring):
 def Start():
     print("Start")
     jsondatalist = readJsonFile()
-    #pilotsNumbers = getPilotsData()
+    pilotsNumbers = getPilotsData()
     
-    pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
+    #pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
 
     producer = Producer(read_ccloud_config("client.properties"))       
                   
