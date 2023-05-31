@@ -56,8 +56,7 @@ def readJsonFile():
 
 
 def makePilotList(pilotsRaw):
-
-    pilots = []
+    pilots=[]
     for i in range(20):
         if pilotsRaw[i]["permanentNumber"] == "33":
             pilots.append(1)
@@ -71,7 +70,6 @@ def getPilotsData():
     PilotData = req.get(dbUrl)
     PilotJson = (json.loads(PilotData.text))["MRData"]["DriverTable"]["Drivers"]
     pilotList = makePilotList(PilotJson)
-
     return pilotList
 
 
@@ -84,7 +82,7 @@ def sendToKafka(data, producer, pilotsNumbers):
         keys = ""
     dataString = str(data)
     for pilotNumber in pilotsNumbers:
-        if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1:
+        if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 and dataString.find("'BestLapTime'") != -1:
             #pilotinfo = data["M"][0]["A"][1]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
             print("mando  " + str(pilotinfo))
