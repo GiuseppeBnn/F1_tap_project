@@ -20,7 +20,7 @@ LastLapTime_df = None
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
     df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("Lap as Lap", "LastLapTime as LapTime")
-    print("check1")
+    print("Dataframe del pilota " + pilotNumber)
     df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(0) * 60 + split(col("LapTime"), ":").getItem(1)))
     df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
     df.show()
@@ -91,7 +91,7 @@ def main():
                     .option("subscribe", "LiveTimingData")
                     .option("kafka.client.id", "client-1")
                     .option("spark.streaming.kafka.maxRatePerPartition", "5")
-                    .option("startingOffsets", "earliest")
+                    .option("startingOffsets", "latest")
                     .option("kafka.session.timeout.ms", "10000")
                     .load() )    
   
