@@ -16,7 +16,7 @@ services:
     environment:
      - INIT_DAEMON_STEP=setup_spark
      - SPARK_MASTER_WEBUI_PORT=8085
-      - PYSPARK_PYTHON_DRIVER=python3.7
+      - PYSPARK_DRIVER_PYTHON=python3.7
 
   spark-worker:
     image: bde2020/spark-worker:3.3.0-hadoop3.3
