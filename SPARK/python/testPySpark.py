@@ -30,12 +30,15 @@ def linearRegression(pilotNumber):
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("check3")
     (trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
-    print("trainingData ")
-    trainingData.show()
-    #model = pipeline.fit(trainingData)
+    #print("trainingData ")
+    #trainingData.show()
+    print("testData ")
+    testData.show()
 
-    #predictions = model.transform(testData)
-    #predictions.show()
+    model = pipeline.fit(df)
+
+    predictions = model.transform(testData)
+    predictions.show()
 
  
 
