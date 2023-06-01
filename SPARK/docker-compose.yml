@@ -12,11 +12,11 @@ services:
     container_name: spark-master
     ports:
      - "7077:7077"
-     - "8085:8085"
+     - "8080:8080"
     environment:
      - INIT_DAEMON_STEP=setup_spark
-     - SPARK_MASTER_WEBUI_PORT=8085
-      - PYSPARK_DRIVER_PYTHON=python3.7
+     - PYSPARK_DRIVER_PYTHON=python3.7
+     
 
   spark-worker:
     image: bde2020/spark-worker:3.3.0-hadoop3.3
