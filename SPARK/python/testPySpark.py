@@ -38,7 +38,7 @@ def linearRegression(pilotNumber):
     print("check3")
     spark20=SparkSession.builder.appName("SparkF1").getOrCreate()
     NextLap=df.agg(max("Lap").alias("Lap")).collect()[0]["Lap"]+1
-    NextLap_df = spark20.createDataFrame([(pilotNumber,NextLap)],["PilotNumber","Lap","Seconds"])
+    NextLap_df = spark20.createDataFrame([(pilotNumber,NextLap, 0)],["PilotNumber","Lap","Seconds"])
     print("check4")
     NextLap_df.show()
 
