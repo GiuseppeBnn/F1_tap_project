@@ -43,7 +43,11 @@ def linearRegression(pilotNumber):
     model = pipeline.fit(df)
 
     predictions = model.transform(NextLap_df)
-    predictions.selectExpr("PilotNumber as PilotNumber","Lap as Lap","prediction as NextLapTimePrediction").show()
+    #predictions.selectExpr("PilotNumber as PilotNumber","Lap as Lap","prediction as NextLapTimePrediction").show()
+    #riconverto i secondi in minuti e secondi e millisec del campo prediction
+    predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
+    predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
+    predictions.show()
 
  
 
