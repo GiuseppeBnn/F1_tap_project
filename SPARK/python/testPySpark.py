@@ -20,7 +20,6 @@ prevision_schema = StructType([
 ])
 lapTimeTotal_df = None
 LastLapTime_df = None
-NextLapTime_df = None
 
 
 def linearRegression(pilotNumber):
@@ -29,34 +28,22 @@ def linearRegression(pilotNumber):
     print("Dataframe del pilota " + pilotNumber)
     df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(0) * 60 + split(col("LapTime"), ":").getItem(1)))
     df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-    df.show()
     df=df.select("Lap","Seconds")
-    print("check2")
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
     lr = LinearRegression(featuresCol="features", regParam=0.01,labelCol="Seconds")
     pipeline = Pipeline(stages=[vectorAssembler, lr])
-    print("check3")
     spark20=SparkSession.builder.appName("SparkF1").getOrCreate()
     NextLap=df.agg(max("Lap").alias("Lap")).collect()
     if(NextLap[0]["Lap"] is None):
         NextLap=1
     else:
         NextLap=NextLap[0]["Lap"]+1    
-    print (NextLap)
     NextLap_df = spark20.createDataFrame([(pilotNumber,NextLap, 0)],["PilotNumber","Lap","Seconds"])
-    print("check4")
-    NextLap_df.show()
-
-    #(trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
-    print("trainingData ")
-    #trainingData.show()
-    #print("testData ")
-    #testData.show()
     
     model = pipeline.fit(df)
 
     predictions = model.transform(NextLap_df)
-    predictions.show()
+    predictions.selectExpr("PilotNumber as PilotNumber","Lap as Lap","prediction as NextLapTimePrediction").show()
 
  
 
@@ -70,12 +57,12 @@ def updateLapTimeTotal(df : DataFrame, epoch_id):
     global LastLapTime_df
     if df.count() != 0:
         lapTimeTotal_df = lapTimeTotal_df.union(df)
-        lapTimeTotal_df.show()
+        #lapTimeTotal_df.show()
         limited_df = lapTimeTotal_df.limit(30)
         LastLapTime_df2 = limited_df.groupBy("PilotNumber").agg(max("Lap").alias("Lap"))
         LastLapTime_df2 = LastLapTime_df2.join(limited_df, ["PilotNumber", "Lap"], "inner")
-        print("Latest Lap Time per Pilot")
-        LastLapTime_df2.show()
+        #print("Latest Lap Time per Pilot")
+        #LastLapTime_df2.show()
 
         for row in df.collect():
             linearRegression(str(row.PilotNumber))
@@ -88,11 +75,9 @@ def main():
         .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     
-    global lapTimeTotal_df
-    global NextLapTime_df
-    nextLapTime_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), prevision_schema)
-    
+    global lapTimeTotal_df    
     lapTimeTotal_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), laptime_schema)
+
     global LastLapTime_df  
     LastLapTime_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), laptime_schema)
 
