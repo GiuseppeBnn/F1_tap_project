@@ -73,27 +73,27 @@ def main():
     global LastLapTime_df  
     LastLapTime_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), laptime_schema)
 
-    #df = spark \
-        #.readStream \
-        #.format("kafka") \
-        #.option("kafka.bootstrap.servers", "192.168.1.122:9093") \
-        #.option("subscribe", "LiveTimingData") \
-        #.load()
+    df = spark \
+        .readStream \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", "broker:29092") \
+        .option("subscribe", "LiveTimingData") \
+        .load()
 
 
-    df = (spark.readStream
-                    .format("kafka")
-                    .option("kafka.bootstrap.servers", "pkc-4nmjv.francecentral.azure.confluent.cloud:9092")
-                    .option("kafka.ssl.endpoint.identification.algorithm", "https")
-                    .option("kafka.sasl.mechanism", "PLAIN")
-                    .option("kafka.security.protocol", "SASL_SSL")
-                    .option("kafka.sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='{}' password='{}';".format("OZK7A2B5EBU2OMWI", "ODBBNwyLTXqOxfE77h+FNLLFa7KB/LakW7HuivBZoFP1fkXevp4tTvgqIuhxFLpr"))
-                    .option("subscribe", "LiveTimingData")
-                    .option("kafka.client.id", "client-1")
-                    .option("spark.streaming.kafka.maxRatePerPartition", "5")
-                    .option("startingOffsets", "latest")
-                    .option("kafka.session.timeout.ms", "10000")
-                    .load() )    
+    #df = (spark.readStream
+    #                .format("kafka")
+    #                .option("kafka.bootstrap.servers", "pkc-4nmjv.francecentral.azure.confluent.cloud:9092")
+    #                .option("kafka.ssl.endpoint.identification.algorithm", "https")
+    #                .option("kafka.sasl.mechanism", "PLAIN")
+    #                .option("kafka.security.protocol", "SASL_SSL")
+    #                .option("kafka.sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username='{}' password='{}';".format("OZK7A2B5EBU2OMWI", "ODBBNwyLTXqOxfE77h+FNLLFa7KB/LakW7HuivBZoFP1fkXevp4tTvgqIuhxFLpr"))
+    #                .option("subscribe", "LiveTimingData")
+    #                .option("group.id", "group-1")
+    #                .option("spark.streaming.kafka.maxRatePerPartition", "5")
+    #                .option("startingOffsets", "latest")
+    #                .option("kafka.session.timeout.ms", "10000")
+    #                .load() )    
   
 
     df2 = df.select(col("value").cast("string").alias("json"))
