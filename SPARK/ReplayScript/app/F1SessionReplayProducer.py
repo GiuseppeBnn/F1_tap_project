@@ -75,13 +75,13 @@ def sendToKafka(data, producer, pilotsNumbers):
         if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 :
             #pilotinfo = data["M"][0]["A"][1]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
-            print("mando  " + str(pilotinfo))
+            #print("mando  " + str(pilotinfo))
             producer.send("LiveTimingData", pilotinfo)
             producer.flush()
         elif dataString.find("'R'") != -1:
             #pilotinfo = data["R"]["TimingData"]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=True)
-            print("mando  " + str(pilotinfo))
+            #print("mando  " + str(pilotinfo))
             producer.send("LiveTimingData", pilotinfo)
             producer.flush()
 

@@ -128,7 +128,7 @@ services:
 
     depends_on:
       broker:
-        condition: service_healthy
+        condition: service_healthy 
       
     command: >
       sh -c "python3 F1SessionReplayProducer.py"
