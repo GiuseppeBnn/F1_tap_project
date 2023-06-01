@@ -157,4 +157,4 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=localhost:9200      
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200      
