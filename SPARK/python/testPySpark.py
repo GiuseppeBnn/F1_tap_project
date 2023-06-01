@@ -25,7 +25,7 @@ NextLapTime_df = None
 
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
-    df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("Lap as Lap", "LastLapTime as LapTime")
+    df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("PilotNumber as PilotNumber","Lap as Lap", "LastLapTime as LapTime")
     print("Dataframe del pilota " + pilotNumber)
     df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(0) * 60 + split(col("LapTime"), ":").getItem(1)))
     df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
@@ -36,18 +36,22 @@ def linearRegression(pilotNumber):
     lr = LinearRegression(featuresCol="features", regParam=0.01,labelCol="Seconds")
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("check3")
-    spark=SparkSession.builder.appName("SparkF1").getOrCreate()
-    spark.createDataFrame(df,schema=prevision_schema)
+    spark20=SparkSession.builder.appName("SparkF1").getOrCreate()
+    NextLap=df.agg(max("Lap").alias("Lap")).collect()[0]["Lap"]+1
+    NextLap_df = spark20.createDataFrame([(pilotNumber,NextLap)],["PilotNumber","Lap","Seconds"])
+    print("check4")
+    NextLap_df.show()
+
     #(trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
     #print("trainingData ")
     #trainingData.show()
     #print("testData ")
     #testData.show()
     
-    model = pipeline.fit(df)
+    #model = pipeline.fit(df)
 
-    predictions = model.transform(df)
-    predictions.show()
+    #predictions = model.transform(df)
+    #predictions.show()
 
  
 
