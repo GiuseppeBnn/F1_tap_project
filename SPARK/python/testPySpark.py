@@ -55,7 +55,7 @@ def linearRegression(pilotNumber):
     
     model = pipeline.fit(df)
 
-    predictions = model.transform(df)
+    predictions = model.transform(NextLap_df)
     predictions.show()
 
  
