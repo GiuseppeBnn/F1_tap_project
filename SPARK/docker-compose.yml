@@ -147,8 +147,7 @@ services:
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
       - "9200:9200"
-    depends_on:
-      - pyspark
+
 
   kibana:
     image: kibana:8.7.1
