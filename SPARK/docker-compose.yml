@@ -3,8 +3,11 @@ services:
 
   pyspark:
     build: .
-    #depends_on:
+    depends_on:
     #  - spark-master
+      - broker
+      - kibana
+      - elasticsearch
     container_name: pyspark
 
   #spark-master:
@@ -144,7 +147,7 @@ services:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
-      - 9200:9200
+      - "9200:9200"
     depends_on:
       - pyspark
 
@@ -156,4 +159,4 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=http://localhost:9200      
+      - ELASTICSEARCH_HOSTS=localhost:9200      

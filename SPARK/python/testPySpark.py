@@ -5,7 +5,8 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 #from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
-from pyspark.sql.functions import col, expr, split, concat, lit
+from pyspark.sql.functions import col,split, concat, lit
+import elasticsearch
 
 # Definisci lo schema dei dati di input
 laptime_schema = StructType([
@@ -20,6 +21,16 @@ prevision_schema = StructType([
 ])
 lapTimeTotal_df = None
 LastLapTime_df = None
+es=elasticsearch.Elasticsearch(hosts=["http://localhost:9200"])
+
+def sendToES(predictions:DataFrame):
+    pass
+    global es
+    prediction_json=predictions.toJSON().collect()
+    for prediction in prediction_json:
+        #es.index(index="predictions",body=prediction)
+        pass
+    
 
 
 def linearRegression(pilotNumber):
@@ -43,10 +54,10 @@ def linearRegression(pilotNumber):
     model = pipeline.fit(df)
 
     predictions = model.transform(NextLap_df)
-    #predictions.selectExpr("PilotNumber as PilotNumber","Lap as Lap","prediction as NextLapTimePrediction").show()
-    #riconverto i secondi in minuti e secondi e millisec del campo prediction
+   
     predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
     predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
+    predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
     predictions.show()
 
  
