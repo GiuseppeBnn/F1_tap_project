@@ -43,20 +43,20 @@ def linearRegression(pilotNumber):
     else:
         NextLap=NextLap[0]["Lap"]+1    
     print (NextLap)
-    #NextLap_df = spark20.createDataFrame([(pilotNumber,NextLap, 0)],["PilotNumber","Lap","Seconds"])
+    NextLap_df = spark20.createDataFrame([(pilotNumber,NextLap, 0)],["PilotNumber","Lap","Seconds"])
     print("check4")
-    #NextLap_df.show()
+    NextLap_df.show()
 
     #(trainingData, testData) = df.randomSplit([0.8, 0.2], seed=42)
-    #print("trainingData ")
+    print("trainingData ")
     #trainingData.show()
     #print("testData ")
     #testData.show()
     
-    #model = pipeline.fit(df)
+    model = pipeline.fit(df)
 
-    #predictions = model.transform(df)
-    #predictions.show()
+    predictions = model.transform(df)
+    predictions.show()
 
  
 
