@@ -7,7 +7,6 @@ services:
     #  - spark-master
       - broker
       - kibana
-      - elasticsearch
     container_name: pyspark
 
   #spark-master:
