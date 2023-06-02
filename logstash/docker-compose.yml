@@ -108,18 +108,19 @@ services:
       timeout: 10s
       retries: 100 
 
- # #-------------------------------#
- # # 🖥️ F1 Replay Script           #
- # #-------------------------------#
- # replay_script:
- #   build:
- #     context: ./ReplayScript
- #     dockerfile: Dockerfile
-#
- #   depends_on:
- #     - logstash
- #     
- #   command: >
- #     sh -c "python3 F1SessionReplayProducer.py"
- #   container_name: f1_replay_script
+  #-------------------------------#
+  # 🖥️ F1 Replay Script           #
+  #-------------------------------#
+  replay_script:
+    build:
+      context: ./ReplayScript
+      dockerfile: Dockerfile
+
+    depends_on:
+      logstash:
+        condition: service_healthy
+      
+    command: >
+      sh -c "python3 F1SessionReplayProducer.py"
+    container_name: f1_replay_script
     
