@@ -11,8 +11,8 @@ def sendToLogstash(data):
     data = json.dumps(data)
     #print(data)
     data = data.encode('utf-8')
-    print(data)
-    print("inviato")
+    #print(data)
+    #print("inviato")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(('logstash', 5000))
     sock.sendall(data)
@@ -111,6 +111,7 @@ def ISOToFloat(datestring):
 
 def Start():
     print("Start")
+    time.sleep(25)
     jsondatalist = readJsonFile()
     pilotsNumbers = getPilotsData()
     #pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
