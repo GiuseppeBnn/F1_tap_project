@@ -5,7 +5,7 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 #from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
-from pyspark.sql.functions import col,split, concat, lit
+
 import elasticsearch
 
 # Definisci lo schema dei dati di input
@@ -70,7 +70,8 @@ def linearRegression(pilotNumber):
     predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
     #predictions.show()
-    complete_df = complete_df.withColumn("NextLapTimePrediction", when((col("PilotNumber") == pilotNumber), predictions["NextLapTimePrediction"]).otherwise(col("NextLapTimePrediction")))
+    pred_lap=predictions.select("NextLapTimePrediction","PilotNumber")
+    complete_df = complete_df.withColumn("NextLapTimePrediction", when(col("PilotNumber") == pred_lap["PilotNumber"], pred_lap["NextLapTimePrediction"]).otherwise(col("NextLapTimePrediction")))
     sendToES(predictions,1)
     sendToES(complete_df,2)
     complete_df.show()
