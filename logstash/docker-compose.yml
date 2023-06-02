@@ -108,7 +108,7 @@ services:
       test: ["CMD", "nc", "-z", "localhost", "5044"]
       interval: 10s
       timeout: 10s
-      retries: 10  
+      retries: 100 
 
   #-------------------------------#
   # 🖥️ F1 Replay Script           #
