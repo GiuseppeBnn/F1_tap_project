@@ -93,10 +93,9 @@ services:
 
     image: docker.elastic.co/logstash/logstash:8.7.0
     depends_on:
-      - broker
-      - zookeeper
-      - kafka-ui
-      - init-kafka
+      broker:
+        condition: service_healthy
+    container_name: logstash
 
     volumes:
       - $PWD/LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
