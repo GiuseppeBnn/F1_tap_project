@@ -98,7 +98,7 @@ services:
     container_name: logstash
 
     volumes:
-      - $PWD/LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
+      - ./LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
     environment: 
       - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
