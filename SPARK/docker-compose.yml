@@ -4,8 +4,8 @@ services:
     build: .
     depends_on:
     #  - spark-master
-      - broker
-      - kibana
+      elasticsearch:
+        condition: service_healthy
     container_name: pyspark
 
   #spark-master:
@@ -147,7 +147,11 @@ services:
       - "xpack.security.enabled=false"
     ports:
       - "9200:9200"
-      
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10  
 
 
   kibana:
@@ -156,6 +160,7 @@ services:
     ports:
       - 5601:5601
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200      
