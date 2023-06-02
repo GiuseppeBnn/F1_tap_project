@@ -88,7 +88,7 @@ services:
   #-------------------------------#
   logstash:
     build:
-      context: LogstashDocker
+      context: ./LogstashDocker
       dockerfile: Dockerfile
 
     image: docker.elastic.co/logstash/logstash:8.7.0
