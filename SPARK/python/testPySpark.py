@@ -47,8 +47,8 @@ mapping = {
         }
     }
 }
-es.delete_by_query(index="predictions", body={"query": {"match_all": {}}})
-es.indices.create(index="predictions", body=mapping)
+#es.delete_by_query(index="predictions", body={"query": {"match_all": {}}})
+#es.indices.create(index="predictions", body=mapping)
 
 
 def sendToES(data: DataFrame, choose: int):
