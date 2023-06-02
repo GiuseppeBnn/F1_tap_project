@@ -88,7 +88,8 @@ services:
   #-------------------------------#
   logstash:
     build:
-      dockerfile: ./LogstashDocker/Dockerfile
+      context: ./LogstashDocker
+      dockerfile: Dockerfile
 
     image: docker.elastic.co/logstash/logstash:8.7.0
     depends_on:
@@ -97,7 +98,7 @@ services:
     container_name: logstash
 
     volumes:
-      - $PWD/LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
+      - $PWD/pipeline/:/usr/share/logstash/pipeline/
     environment: 
       - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
