@@ -92,9 +92,9 @@ services:
       dockerfile: Dockerfile
 
     image: docker.elastic.co/logstash/logstash:8.7.0
-    depends_on:
-      broker:
-        condition: service_healthy
+    #depends_on:
+      #broker:
+       # condition: service_healthy
     container_name: logstash
 
     volumes:
