@@ -21,15 +21,15 @@ prevision_schema = StructType([
 ])
 lapTimeTotal_df = None
 LastLapTime_df = None
-es=elasticsearch.Elasticsearch(hosts=["http://localhost:9200"])
+es=elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 
 def sendToES(predictions:DataFrame):
-    pass
+    
     global es
     prediction_json=predictions.toJSON().collect()
     for prediction in prediction_json:
-        #es.index(index="predictions",body=prediction)
-        pass
+        es.index(index="predictions",body=prediction)
+        
     
 
 
@@ -59,6 +59,7 @@ def linearRegression(pilotNumber):
     predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
     predictions.show()
+    sendToES(predictions)
 
  
 
