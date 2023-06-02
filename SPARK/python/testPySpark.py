@@ -29,13 +29,36 @@ LastLapTime_df = None
 complete_df = None
 es=elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 
+
+
+mapping = {
+  "properties": {
+    "PilotNumber": {
+      "type": "integer"
+    },
+    "Lap": {
+        "type": "integer"
+    },
+    "NextLapTimePrediction": {
+        "type": "float"
+    }
+  }
+}
+es.indices.create(index="predictions", body=mapping)
+
+
+
+
+
 def sendToES(data:DataFrame, choose:int):
     
     global es
     if(choose==1):
         data_json=data.toJSON().collect()
         for d in data_json:
+            #sendo to elasticsearch with d as float
             es.index(index="predictions",body=d)
+            
             print(d,type(d))
     if(choose==2):
         data_json=data.toJSON().collect()
