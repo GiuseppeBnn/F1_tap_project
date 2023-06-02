@@ -1,145 +1,145 @@
 version: '3.9'
 services:
 
-#  pyspark:
-#    build: .
-#    depends_on:
-#    #  - spark-master
-#      - broker
-#      - kibana
-#    container_name: pyspark
+  #pyspark:
+  #  build: .
+  #  depends_on:
+  #  #  - spark-master
+  #    - broker
+  #    - kibana
+  #  container_name: pyspark
 #
-#  #spark-master:
-#  #  image: bde2020/spark-master:3.3.0-hadoop3.3
-#  #  container_name: spark-master
-#  #  ports:
-#  #   - "7077:7077"
-#  #   - "8080:8080"
-#  #  environment:
-#  #   - INIT_DAEMON_STEP=setup_spark
-#  #   - PYSPARK_DRIVER_PYTHON=python3.7
+  ##spark-master:
+  ##  image: bde2020/spark-master:3.3.0-hadoop3.3
+  ##  container_name: spark-master
+  ##  ports:
+  ##   - "7077:7077"
+  ##   - "8080:8080"
+  ##  environment:
+  ##   - INIT_DAEMON_STEP=setup_spark
+  ##   - PYSPARK_DRIVER_PYTHON=python3.7
 #
 #
-#  #spark-worker:
-#  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-#  #  container_name: spark-worker
+  ##spark-worker:
+  ##  image: bde2020/spark-worker:3.3.0-hadoop3.3
+  ##  container_name: spark-worker
 ##
-#  #  depends_on:
-#  #    - spark-master
-#  #  ports:
-#  #    - "8081:8081"
-#  #  environment:
-#  #    - "SPARK_MASTER=spark://spark-master:7077"
-#  #    - SPARK_WORKER_MEMORY=2G
-#  #    - SPARK_WORKER_CORES=2
-#  #    - PYSPARK_PYTHON=python3.7
+  ##  depends_on:
+  ##    - spark-master
+  ##  ports:
+  ##    - "8081:8081"
+  ##  environment:
+  ##    - "SPARK_MASTER=spark://spark-master:7077"
+  ##    - SPARK_WORKER_MEMORY=2G
+  ##    - SPARK_WORKER_CORES=2
+  ##    - PYSPARK_PYTHON=python3.7
 ##
-#  #spark-worker2:
-#  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-#  #  container_name: spark-worker2
+  ##spark-worker2:
+  ##  image: bde2020/spark-worker:3.3.0-hadoop3.3
+  ##  container_name: spark-worker2
 ##
-#  #  depends_on:
-#  #    - spark-master
-#  #  ports:
-#  #    - "8082:8082"
-#  #  environment:
-#  #    - "SPARK_MASTER=spark://spark-master:7077"
-#  #    - SPARK_WORKER_MEMORY=2G
-#  #    - SPARK_WORKER_CORES=2
-#  #    - SPARK_WORKER_WEBUI_PORT=8082
-#  #    - PYSPARK_PYTHON=python3.7
-#  #-------------------------------#
-#  # 🖥️ Zookeeper-service          #
-#  #-------------------------------#
-#  zookeeper:
-#    image: confluentinc/cp-zookeeper:latest
-#  
-#    environment:
-#      ZOOKEEPER_CLIENT_PORT: 2181
-#      ZOOKEEPER_TICK_TIME: 2000
-#    healthcheck:
-#      test: [ "CMD", "nc", "-z", "localhost", "2181" ]
-#      interval: 10s
-#      timeout: 10s
-#      retries: 5
-#  
-#    container_name: zookeeper
-#  
-#  
-#  
-#  #-------------------------------#
-#  # 🖥️ Kafka-Broker              #
-#  #-------------------------------#
-#  broker:
-#    image: confluentinc/cp-kafka:latest
-#  
-#    ports:
-#      - "9092:9092"
-#    healthcheck:
-#      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 5
-#    depends_on:
-#      zookeeper:
-#        condition: service_healthy
-#  
-#    container_name: broker
-#    environment:
-#      KAFKA_BROKER_ID: 1
-#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092,EXTERNAL://192.168.1.49:9093
-#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-#      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-#  
-#  
-#  #-------------------------------#
-#  # 🖥️ Initialize topics         #
-#  #-------------------------------#
-#  init-kafka:
-#    image: confluentinc/cp-kafka:latest
-#    depends_on:
-#      broker:
-#        condition: service_healthy
-#    entrypoint: [ '/bin/sh', '-c' ]
-#    command: |
-#      "
-#      blocks until kafka is reachable
-#      kafka-topics --bootstrap-server broker:29092 --list
-#  
-#      echo -e 'Creating kafka topics numb'
-#      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic LiveTimingData --replication-factor 1 --partitions 1
-#  
-#      echo -e 'Successfully created the following topics:'
-#      kafka-topics --bootstrap-server broker:29092 --list
-#  
-#  
-#  
-#      "
-#    container_name: init-kafka
-#    healthcheck:
-#      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 5
+  ##  depends_on:
+  ##    - spark-master
+  ##  ports:
+  ##    - "8082:8082"
+  ##  environment:
+  ##    - "SPARK_MASTER=spark://spark-master:7077"
+  ##    - SPARK_WORKER_MEMORY=2G
+  ##    - SPARK_WORKER_CORES=2
+  ##    - SPARK_WORKER_WEBUI_PORT=8082
+  ##    - PYSPARK_PYTHON=python3.7
+  ##-------------------------------#
+  ## 🖥️ Zookeeper-service          #
+  ##-------------------------------#
+  #zookeeper:
+  #  image: confluentinc/cp-zookeeper:latest
+  #
+  #  environment:
+  #    ZOOKEEPER_CLIENT_PORT: 2181
+  #    ZOOKEEPER_TICK_TIME: 2000
+  #  healthcheck:
+  #    test: [ "CMD", "nc", "-z", "localhost", "2181" ]
+  #    interval: 10s
+  #    timeout: 10s
+  #    retries: 5
+  #
+  #  container_name: zookeeper
+  #
+  #
+  #
+  ##-------------------------------#
+  ## 🖥️ Kafka-Broker              #
+  ##-------------------------------#
+  #broker:
+  #  image: confluentinc/cp-kafka:latest
+  #
+  #  ports:
+  #    - "9092:9092"
+  #  healthcheck:
+  #    test: [ "CMD", "nc", "-z", "localhost", "9092" ]
+  #    interval: 5s
+  #    timeout: 5s
+  #    retries: 5
+  #  depends_on:
+  #    zookeeper:
+  #      condition: service_healthy
+  #
+  #  container_name: broker
+  #  environment:
+  #    KAFKA_BROKER_ID: 1
+  #    KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+  #    KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092,EXTERNAL://192.168.1.49:9093
+  #    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  #    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  #
+  #
+  ##-------------------------------#
+  ## 🖥️ Initialize topics         #
+  ##-------------------------------#
+  #init-kafka:
+  #  image: confluentinc/cp-kafka:latest
+  #  depends_on:
+  #    broker:
+  #      condition: service_healthy
+  #  entrypoint: [ '/bin/sh', '-c' ]
+  #  command: |
+  #    "
+  #    blocks until kafka is reachable
+  #    kafka-topics --bootstrap-server broker:29092 --list
+  #
+  #    echo -e 'Creating kafka topics numb'
+  #    kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic LiveTimingData --replication-factor 1 --partitions 1
+  #
+  #    echo -e 'Successfully created the following topics:'
+  #    kafka-topics --bootstrap-server broker:29092 --list
+  #
+  #
+  #
+  #    "
+  #  container_name: init-kafka
+  #  healthcheck:
+  #    test: [ "CMD", "nc", "-z", "localhost", "9092" ]
+  #    interval: 5s
+  #    timeout: 5s
+  #    retries: 5
 #
 #
-#  replay_script:
-#    build:
-#      context: ./ReplayScript
-#      dockerfile: Dockerfile
+  #replay_script:
+  #  build:
+  #    context: ./ReplayScript
+  #    dockerfile: Dockerfile
 #
-#    depends_on:
-#      broker:
-#        condition: service_healthy 
-#      
-#    command: >
-#      sh -c "python3 F1SessionReplayProducer.py"
-#    container_name: f1_replay_script
-#  
-  es:
+  #  depends_on:
+  #    broker:
+  #      condition: service_healthy 
+  #    
+  #  command: >
+  #    sh -c "python3 F1SessionReplayProducer.py"
+  #  container_name: f1_replay_script
+  #
+  elasticsearch:
     image: elasticsearch:8.7.1
     container_name: elasticsearch
     environment:
@@ -149,12 +149,12 @@ services:
       - "9200:9200"
 
 
-  kib:
+  kibana:
     image: kibana:8.7.1
     container_name: kibana
     ports:
       - 5601:5601
     depends_on:
-      - es
+      - elasticsearch
     environment:
-      - ELASTICSEARCH_HOSTS=https://es:9200      
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200      
