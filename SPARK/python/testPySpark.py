@@ -64,7 +64,7 @@ def sendToES(data: DataFrame, choose: int):
     if (choose == 2):
         data_json = data.toJSON().collect()
         for d in data_json:
-            es.index(index="laptimes", body=d)
+            es.index(index="lastlaptimes", body=d)
 
 
 def linearRegression(pilotNumber):
