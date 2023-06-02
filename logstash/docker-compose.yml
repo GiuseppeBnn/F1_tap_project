@@ -119,8 +119,7 @@ services:
       dockerfile: Dockerfile
 
     depends_on:
-      logstash:
-        condition: service_healthy
+      - logstash
       
     command: >
       sh -c "python3 F1SessionReplayProducer.py"

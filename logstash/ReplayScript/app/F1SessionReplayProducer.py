@@ -1,8 +1,22 @@
 from dateutil import parser
 import time
 import json
-from kafka import KafkaProducer
 import requests as req
+import socket
+
+
+
+def sendToLogstash(data):
+    #print(data)
+    data = json.dumps(data)
+    #print(data)
+    #data = data.encode('utf-8')
+    print(data)
+    print("inviato")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('logstash', 5000))
+    sock.sendall(data)
+    sock.close()
 
 
 def jsonModifier(jsonData, pilotsNumber,recapBool):
@@ -15,12 +29,12 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
         
     return jsonData
 
-def timedSender(jsondata, producer, pilotsNumbers, deltaTime):
+def timedSender(jsondata, pilotsNumbers, deltaTime):
     if deltaTime > 10 or deltaTime <= 0:
         deltaTime = 0.1
     elif deltaTime > 0: 
         time.sleep(float(deltaTime))
-        sendToKafka(jsondata, producer, pilotsNumbers)    
+        sender(jsondata, pilotsNumbers)    
 
 
 def roundFloat(timeOfJson_str):
@@ -61,7 +75,7 @@ def getPilotsData():
     return pilotList
 
 
-def sendToKafka(data, producer, pilotsNumbers):
+def sender(data, pilotsNumbers):
 
     #data = json.loads(data)
     try:
@@ -76,14 +90,12 @@ def sendToKafka(data, producer, pilotsNumbers):
             #pilotinfo = data["M"][0]["A"][1]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
             #print("mando  " + str(pilotinfo))
-            producer.send("LiveTimingData", pilotinfo)
-            producer.flush()
+            sendToLogstash(pilotinfo)
         elif dataString.find("'R'") != -1:
             #pilotinfo = data["R"]["TimingData"]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=True)
             #print("mando  " + str(pilotinfo))
-            producer.send("LiveTimingData", pilotinfo)
-            producer.flush()
+            sendToLogstash(pilotinfo)
 
 
 
@@ -100,10 +112,8 @@ def ISOToFloat(datestring):
 def Start():
     print("Start")
     jsondatalist = readJsonFile()
-    #pilotsNumbers = getPilotsData()
-    pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
-    producer = KafkaProducer(bootstrap_servers='broker:29092',
-                             value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    pilotsNumbers = getPilotsData()
+    #pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
     previousTime = -40
     deltaTime = 0
 
@@ -118,10 +128,10 @@ def Start():
                 # delta tra precedente e attuale
             deltaTime = actualTime-previousTime
             previousTime = actualTime
-            timedSender(jsond, producer, pilotsNumbers, deltaTime)
+            timedSender(jsond, pilotsNumbers, deltaTime)
 
         else:
-            timedSender(jsond, producer, pilotsNumbers, 0.001)
+            timedSender(jsond,pilotsNumbers, 0.001)
 
     print("End")
 
