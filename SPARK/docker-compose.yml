@@ -155,6 +155,6 @@ services:
     ports:
       - 5601:5601
     depends_on:
-      - elasticsearch_8
+      - es
     environment:
       - ELASTICSEARCH_HOSTS=https://es:9200      
