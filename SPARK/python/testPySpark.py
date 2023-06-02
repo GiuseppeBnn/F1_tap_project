@@ -121,6 +121,8 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
         LastLapTime_df2 = LastLapTime_df2.join(
             limited_df, ["PilotNumber", "Lap"], "inner")
         LastLapTime_df2 = LastLapTime_df2.withColumn("timestamp", current_timestamp())
+        #converti LastLapTime in secondi
+        LastLapTime_df2 = LastLapTime_df2.withColumn("Seconds", concat( lit(floor(col("LastLapTime")/60)), lit(":"), format_number((col("LastLapTime")%60), 3)))
         sendToES(LastLapTime_df2, 2)
         # print("Latest Lap Time per Pilot")
         # LastLapTime_df2.show()
