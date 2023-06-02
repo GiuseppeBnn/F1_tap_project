@@ -67,8 +67,8 @@ def linearRegression(pilotNumber):
 
     predictions = model.transform(NextLap_df)
    
-    predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
-    predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
+    #predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
+    #predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
     #predictions.show()
     sendToES(predictions,1)
