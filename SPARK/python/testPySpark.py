@@ -9,32 +9,43 @@ from pyspark.sql.functions import col,split, concat, lit
 import elasticsearch
 
 # Definisci lo schema dei dati di input
+complete_schema = StructType([
+    StructField("PilotNumber", IntegerType(), nullable=False),
+    StructField("Lap", IntegerType(), nullable=True),
+    StructField("LastLapTime", StringType(), nullable=True),
+    StructField("NextLapTimePrediction", StringType(), nullable=True),])
+
 laptime_schema = StructType([
     StructField("PilotNumber", IntegerType(), nullable=False),
     StructField("LastLapTime", StringType(), nullable=True),
-    StructField("Lap", IntegerType(), nullable=True)
-])
+    StructField("Lap", IntegerType(), nullable=True)])
+
 prevision_schema = StructType([
     StructField("PilotNumber", IntegerType(), nullable=False),
     StructField("Lap", IntegerType(), nullable=True),
-    StructField("Seconds", FloatType(), nullable=True)
-])
+    StructField("Seconds", FloatType(), nullable=True)])
 lapTimeTotal_df = None
 LastLapTime_df = None
+complete_df = None
 es=elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 
-def sendToES(predictions:DataFrame):
+def sendToES(data:DataFrame, choose:int):
     
     global es
-    prediction_json=predictions.toJSON().collect()
-    for prediction in prediction_json:
-        es.index(index="predictions",body=prediction)
+    if(choose==1):
+        data_json=data.toJSON().collect()
+        for d in data_json:
+            es.index(index="predictions",body=d)
+    if(choose==2):
+        data_json=data.toJSON().collect()
+        for d in data_json:
+            es.index(index="completedf",body=d)        
         
     
-
-
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
+    global LastLapTime_df
+    global complete_df
     df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr("PilotNumber as PilotNumber","Lap as Lap", "LastLapTime as LapTime")
     print("Dataframe del pilota " + pilotNumber)
     df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(0) * 60 + split(col("LapTime"), ":").getItem(1)))
@@ -58,8 +69,11 @@ def linearRegression(pilotNumber):
     predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
     predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
-    predictions.show()
-    sendToES(predictions)
+    #predictions.show()
+    complete_df = complete_df.withColumn("NextLapTimePrediction", when((col("PilotNumber") == pilotNumber), predictions["NextLapTimePrediction"]).otherwise(col("NextLapTimePrediction")))
+    sendToES(predictions,1)
+    sendToES(complete_df,2)
+    complete_df.show()
 
  
 
@@ -97,6 +111,8 @@ def main():
     global LastLapTime_df  
     LastLapTime_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), laptime_schema)
 
+    global complete_df
+    complete_df = spark.createDataFrame(spark.sparkContext.emptyRDD(), complete_schema)
     df = spark \
         .readStream \
         .format("kafka") \
