@@ -128,8 +128,8 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
         sendToES(LastLapTime_df2, 2)
         LastLapTime_df2.show()
 
-        for row in df.collect():
-            linearRegression(str(row.PilotNumber))
+        #for row in df.collect():
+            #linearRegression(str(row.PilotNumber))
 
 
 def main():
