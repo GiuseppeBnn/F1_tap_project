@@ -139,7 +139,7 @@ services:
 #      sh -c "python3 F1SessionReplayProducer.py"
 #    container_name: f1_replay_script
 #  
-  elasticsearch:
+  elasticsearch_8:
     image: elasticsearch:8.7.1
     container_name: elasticsearch
     environment:
@@ -149,7 +149,7 @@ services:
       - "9200:9200"
 
 
-  kibana:
+  kibana_8:
     image: kibana:8.7.1
     container_name: kibana
     ports:
