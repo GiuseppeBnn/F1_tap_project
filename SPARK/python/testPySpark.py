@@ -72,7 +72,7 @@ def linearRegression(pilotNumber):
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
     #predictions.show()
     sendToES(predictions,1)
-    sendToES(LastLapTime_df,2)
+    
     print("mando a ES")
     
 
@@ -92,6 +92,7 @@ def updateLapTimeTotal(df : DataFrame, epoch_id):
         limited_df = lapTimeTotal_df.limit(30)
         LastLapTime_df2 = limited_df.groupBy("PilotNumber").agg(max("Lap").alias("Lap"))
         LastLapTime_df2 = LastLapTime_df2.join(limited_df, ["PilotNumber", "Lap"], "inner")
+        sendToES(LastLapTime_df2,2)
         #print("Latest Lap Time per Pilot")
         #LastLapTime_df2.show()
 
