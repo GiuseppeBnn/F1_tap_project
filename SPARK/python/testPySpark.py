@@ -36,11 +36,11 @@ def sendToES(data:DataFrame, choose:int):
         data_json=data.toJSON().collect()
         for d in data_json:
             es.index(index="predictions",body=d)
+            print(d,type(d))
     if(choose==2):
         data_json=data.toJSON().collect()
         for d in data_json:
-            es.index(index="laptimes",body=d)   
-    data.show()     
+            es.index(index="laptimes",body=d)       
         
     
 def linearRegression(pilotNumber):
@@ -70,6 +70,7 @@ def linearRegression(pilotNumber):
     #predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
     #predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
+    predictions = predictions.withColumn("prediction", predictions["prediction"].cast(FloatType()))
     #predictions.show()
     sendToES(predictions,1)
     
