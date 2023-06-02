@@ -39,7 +39,7 @@ def sendToES(data:DataFrame, choose:int):
     if(choose==2):
         data_json=data.toJSON().collect()
         for d in data_json:
-            es.index(index="completedf",body=d)        
+            es.index(index="lapTimes",body=d)        
         
     
 def linearRegression(pilotNumber):
@@ -70,11 +70,10 @@ def linearRegression(pilotNumber):
     predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
     #predictions.show()
-    pred_lap=predictions.select("NextLapTimePrediction","PilotNumber")
-    complete_df = complete_df.withColumn("NextLapTimePrediction", when(col("PilotNumber") == pred_lap["PilotNumber"], pred_lap["NextLapTimePrediction"]).otherwise(col("NextLapTimePrediction")))
     sendToES(predictions,1)
-    sendToES(complete_df,2)
-    complete_df.show()
+    sendToES(LastLapTime_df,2)
+    print("mando a ES")
+    
 
  
 
