@@ -10,7 +10,7 @@ def sendToLogstash(data):
     #print(data)
     data = json.dumps(data)
     #print(data)
-    #data = data.encode('utf-8')
+    data = data.encode('utf-8')
     print(data)
     print("inviato")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
