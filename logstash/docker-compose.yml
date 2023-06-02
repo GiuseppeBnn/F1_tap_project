@@ -90,19 +90,17 @@ services:
     build:
       context: ./LogstashDocker
       dockerfile: Dockerfile
-
-    image: docker.elastic.co/logstash/logstash:8.7.0
     #depends_on:
       #broker:
        # condition: service_healthy
     container_name: logstash
-
     volumes:
       - ./LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
     environment: 
       - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
       - "5044:5044"
+      - "9600:9600"
 
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "5044"]
