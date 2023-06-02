@@ -5,7 +5,6 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 # from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
-
 import elasticsearch
 
 # Definisci lo schema dei dati di input
@@ -41,6 +40,9 @@ mapping = {
             },
             "NextLapTimePrediction": {
                 "type": "float"
+            },
+            "timestamp": {
+                "type": "date"
             }
         }
     }
@@ -98,6 +100,7 @@ def linearRegression(pilotNumber):
         "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
     predictions = predictions.withColumn(
         "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
+    predictions = predictions.withColumn("timestamp", current_timestamp())
     # predictions.show()
     sendToES(predictions, 1)
 
