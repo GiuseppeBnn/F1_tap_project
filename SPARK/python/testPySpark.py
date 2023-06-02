@@ -120,6 +120,7 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
             "PilotNumber").agg(max("Lap").alias("Lap"))
         LastLapTime_df2 = LastLapTime_df2.join(
             limited_df, ["PilotNumber", "Lap"], "inner")
+        LastLapTime_df2 = LastLapTime_df2.withColumn("timestamp", current_timestamp())
         sendToES(LastLapTime_df2, 2)
         # print("Latest Lap Time per Pilot")
         # LastLapTime_df2.show()
