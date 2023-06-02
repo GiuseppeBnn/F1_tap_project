@@ -101,11 +101,7 @@ services:
     ports:
       - "5044:5044"
       - "9600:9600"
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "9600"]
-      interval: 25s
-      timeout: 30s
-      retries: 100 
+    
 
     
 
@@ -118,8 +114,7 @@ services:
       dockerfile: Dockerfile
 
     depends_on:
-       logstash:
-        condition: service_healthy
+       - logstash
       
     command: >
       sh -c "python3 F1SessionReplayProducer.py"
