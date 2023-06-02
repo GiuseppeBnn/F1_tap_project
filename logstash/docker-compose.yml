@@ -102,11 +102,7 @@ services:
       - "5044:5044"
       - "9600:9600"
 
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "5044"]
-      interval: 10s
-      timeout: 10s
-      retries: 100 
+    
 
   #-------------------------------#
   # 🖥️ F1 Replay Script           #
@@ -117,8 +113,7 @@ services:
       dockerfile: Dockerfile
 
     depends_on:
-      logstash:
-        condition: service_healthy
+      - logstash
       
     command: >
       sh -c "python3 F1SessionReplayProducer.py"
