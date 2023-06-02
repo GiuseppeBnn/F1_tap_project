@@ -115,7 +115,8 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
     if df.count() != 0:
         lapTimeTotal_df = lapTimeTotal_df.union(df)
         # lapTimeTotal_df.show()
-        limited_df = lapTimeTotal_df.limit(30)
+        limited_df = lapTimeTotal_df.limit(30).orderBy(
+            "Lap", ascending=False)
         LastLapTime_df2 = limited_df.groupBy(
             "PilotNumber").agg(max("Lap").alias("Lap"))
         LastLapTime_df2 = LastLapTime_df2.join(
