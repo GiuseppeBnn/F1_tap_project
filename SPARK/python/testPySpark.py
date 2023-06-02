@@ -70,7 +70,7 @@ def linearRegression(pilotNumber):
     #predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
     #predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     predictions= predictions.selectExpr("PilotNumber as PilotNumber","Lap as NextLap","prediction as NextLapTimePrediction")
-    predictions = predictions.withColumn("prediction", predictions["prediction"].cast(FloatType()))
+    predictions = predictions.withColumn("NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
     #predictions.show()
     sendToES(predictions,1)
     
