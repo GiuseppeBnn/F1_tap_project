@@ -17,12 +17,15 @@ complete_schema = StructType([
 laptime_schema = StructType([
     StructField("PilotNumber", IntegerType(), nullable=False),
     StructField("LastLapTime", StringType(), nullable=True),
-    StructField("Lap", IntegerType(), nullable=True)])
+    StructField("Lap", IntegerType(), nullable=True),
+    StructField("@timestamp", TimestampType(), nullable=True),])
+
 
 prevision_schema = StructType([
     StructField("PilotNumber", IntegerType(), nullable=False),
     StructField("Lap", IntegerType(), nullable=True),
-    StructField("Seconds", FloatType(), nullable=True)])
+    StructField("Seconds", FloatType(), nullable=True),
+    StructField("@timestamp", TimestampType(), nullable=True),])
 lapTimeTotal_df = None
 LastLapTime_df = None
 complete_df = None
