@@ -49,10 +49,10 @@ def sendToLogstash(data):
 def jsonModifier(jsonData, pilotsNumber,recapBool):
     if(recapBool):
         jsonData = jsonData["R"]["TimingData"]["Lines"][str(pilotsNumber)]
-        jsonData["PilotNumber"]=str(pilotsNumber)
+        jsonData["PilotNumber"]=pilotsNumber
     else:
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
-        jsonData["PilotNumber"]=str(pilotsNumber)
+        jsonData["PilotNumber"]=pilotsNumber
         
     return jsonData
 
