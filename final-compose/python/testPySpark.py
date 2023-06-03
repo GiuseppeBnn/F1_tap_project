@@ -102,6 +102,8 @@ def linearRegression(pilotNumber):
             "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
         predictions = predictions.withColumn(
             "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
+        predictions = predictions.withColumn(
+            "PilotNumber", predictions["PilotNumber"].cast(IntegerType()))
         predictions = predictions.withColumn("@timestamp", current_timestamp())
         predictions.show()
         sendToES(predictions, 1)
