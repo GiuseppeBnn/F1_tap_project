@@ -4,6 +4,20 @@ import json
 import requests as req
 import socket
 
+
+def testLogstash():
+    while True:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(('logstash', 5000))
+            sock.close()
+            break
+        except:
+            print("Logstash not ready")
+            time.sleep(5)
+            continue
+    
+
 def sendToLogstash2(data):
     data = json.dumps(data)
     data = data.encode('utf-8')
@@ -142,7 +156,7 @@ def Start():
     pilotsNumbers = getPilotsData()
     #pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
 
-    time.sleep(30)
+    testLogstash()  #bloccante, aspetta che logstash sia pronto
     previousTime = -40
     deltaTime = 0
 
