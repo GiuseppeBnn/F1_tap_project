@@ -96,6 +96,7 @@ services:
     container_name: logstash
     volumes:
       - ./LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
+      - ./pipelines/pipelines.yml:/usr/share/logstash/config/pipelines.yml
     environment: 
       - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
@@ -119,4 +120,31 @@ services:
     command: >
       sh -c "python3 F1SessionReplayProducer.py"
     container_name: f1_replay_script
+
     
+  elasticsearch:
+    image: elasticsearch:8.7.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "xpack.security.enabled=false"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10  
+
+
+  kibana:
+    image: kibana:8.7.1
+    container_name: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200  

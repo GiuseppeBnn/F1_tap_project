@@ -106,12 +106,12 @@ def checkWeather(data):
     else:
         return False
 
-def checkRaceControlMessages(data):
-    if data["M"][0]["A"][0] == "RaceControlMessages":
-        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
-        return True
-    else:
-        return False
+#def checkRaceControlMessages(data):
+#    if data["M"][0]["A"][0] == "RaceControlMessages":
+#        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
+#        return True
+#    else:
+#        return False
     
             
 
@@ -119,8 +119,8 @@ def sender(data, pilotsNumbers):
     try:
         if checkWeather(data):
             return
-        elif checkRaceControlMessages(data):
-            return
+        #elif checkRaceControlMessages(data):
+        #    return
         keys = dict(data["M"][0]["A"][1]["Lines"]).keys()
         keys = str(keys)
     except:

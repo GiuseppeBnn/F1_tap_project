@@ -4,13 +4,18 @@ import json
 import requests as req
 import socket
 
-
+def sendToLogstash2(data):
+    data = json.dumps(data)
+    data = data.encode('utf-8')
+    #print(data)
+    #print("inviato 2")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('logstash', 5001))
+    sock.sendall(data)
+    sock.close()
 
 def sendToLogstash(data):
-    #print(data)
-    data = json.dumps(data)
-    #print(data)
-    data = data.encode('utf-8')
+    data = json.dumps(data).encode('utf-8')
     #print(data)
     #print("inviato")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,9 +51,12 @@ def roundFloat(timeOfJson_str):
 
 
 def readJsonFile():
-    filejson = open("rawMiami.json", "r")
+    filejson = open("rawDataMonaco.json", "r")
     jsondata = filejson.read()
     filejson.close()  # funzione per preparare il file
+    #togli gli spazi tra } e {
+
+    jsondata= jsondata.strip
     jsondata = jsondata.replace("}{", "}£{")
     jsondatalist = jsondata.split("£")
     return jsondatalist
@@ -75,10 +83,30 @@ def getPilotsData():
     return pilotList
 
 
-def sender(data, pilotsNumbers):
 
-    #data = json.loads(data)
+
+def checkWeather(data):
+    if data["M"][0]["A"][0] == "WeatherData":
+        sendToLogstash2(data["M"][0]["A"][1])
+        return True
+    else:
+        return False
+
+def checkRaceControlMessages(data):
+    if data["M"][0]["A"][0] == "RaceControlMessages":
+        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
+        return True
+    else:
+        return False
+    
+            
+
+def sender(data, pilotsNumbers):
     try:
+        if checkWeather(data):
+            return
+        elif checkRaceControlMessages(data):
+            return
         keys = dict(data["M"][0]["A"][1]["Lines"]).keys()
         keys = str(keys)
     except:
@@ -111,30 +139,34 @@ def ISOToFloat(datestring):
 
 def Start():
     print("Start")
-    time.sleep(25)
-    jsondatalist = readJsonFile()
     pilotsNumbers = getPilotsData()
     #pilotsNumbers = [1, 16, 55, 4, 10, 11, 14, 18, 20, 22, 23, 24, 27, 31, 44, 63, 77, 81, 2, 21]
+
+    time.sleep(30)
     previousTime = -40
     deltaTime = 0
 
-    for jsondata in jsondatalist:
-        jsond = json.loads(jsondata)
-        boolean = (str(jsond)).find("'R'")
+    filejson = open("rawDataMonaco.json", "r")
+    for jsondata in filejson:
+        
+        if jsondata.find("{") != -1:
+            jsond = json.loads(jsondata)
+            boolean = (str(jsond)).find("'R'")
 
-        if boolean == -1:
-            actualTime = roundFloat(jsond["M"][0]["A"][2])
-            if previousTime == -40:
-                previousTime = actualTime
+            if boolean == -1 and jsond["M"].__len__()!= 0 :
+                actualTime = roundFloat(jsond["M"][0]["A"][2])
+                if previousTime == -40:
+                    previousTime = actualTime
                 # delta tra precedente e attuale
-            deltaTime = actualTime-previousTime
-            previousTime = actualTime
-            timedSender(jsond, pilotsNumbers, deltaTime)
+                deltaTime = actualTime-previousTime
+                previousTime = actualTime
+                timedSender(jsond, pilotsNumbers, deltaTime)
 
-        else:
-            timedSender(jsond,pilotsNumbers, 0.001)
+            else:
+                timedSender(jsond,pilotsNumbers, 0.001)
 
     print("End")
+    filejson.close()
 
 
 def main():

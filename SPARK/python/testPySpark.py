@@ -29,24 +29,24 @@ complete_df = None
 es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 
 
-mapping = {
-    "mappings": {
-        "properties": {
-            "PilotNumber": {
-                "type": "integer"
-            },
-            "Lap": {
-                "type": "integer"
-            },
-            "NextLapTimePrediction": {
-                "type": "float"
-            },
-            "timestamp": {
-                "type": "date"
-            }
-        }
-    }
-}
+#mapping = {
+#    "mappings": {
+#        "properties": {
+#            "PilotNumber": {
+#                "type": "integer"
+#            },
+#            "Lap": {
+#                "type": "integer"
+#            },
+#            "NextLapTimePrediction": {
+#                "type": "float"
+#            },
+#            "timestamp": {
+#                "type": "date"
+#            }
+#        }
+#    }
+#}
 #es.delete_by_query(index="predictions", body={"query": {"match_all": {}}})
 #es.indices.create(index="predictions", body=mapping)
 
