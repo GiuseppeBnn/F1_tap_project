@@ -1,5 +1,5 @@
 from pyspark.sql.functions import *
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType, TimestampType
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
@@ -18,7 +18,6 @@ laptime_schema = StructType([
     StructField("PilotNumber", IntegerType(), nullable=False),
     StructField("LastLapTime", StringType(), nullable=True),
     StructField("Lap", IntegerType(), nullable=True)])
-
 
 prevision_schema = StructType([
     StructField("PilotNumber", IntegerType(), nullable=False),
@@ -81,7 +80,7 @@ def linearRegression(pilotNumber):
     df = df.select("Lap", "Seconds")
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
     lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=10)
+                          regParam=0.01, labelCol="Seconds")
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
     NextLap = df.agg(max("Lap").alias("Lap")).collect()
@@ -89,7 +88,7 @@ def linearRegression(pilotNumber):
         NextLap = 1
     else:
         NextLap = NextLap[0]["Lap"]+1
-    NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0,0)], [
+    NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
                                          "PilotNumber", "Lap", "Seconds"])
 
     model = pipeline.fit(df)
@@ -103,7 +102,7 @@ def linearRegression(pilotNumber):
     predictions = predictions.withColumn(
         "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
     predictions = predictions.withColumn("@timestamp", current_timestamp())
-    predictions.show()
+    # predictions.show()
     sendToES(predictions, 1)
 
     print("mando a ES")
@@ -123,6 +122,7 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
         LastLapTime_df2 = LastLapTime_df2.join(
             limited_df, ["PilotNumber", "Lap"], "inner")
         LastLapTime_df2 = LastLapTime_df2.withColumn("@timestamp", current_timestamp())
+        #converti LastLapTime in secondi
         LastLapTime_df2 = LastLapTime_df2.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
             0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         LastLapTime_df2 = LastLapTime_df2.withColumn("Seconds", LastLapTime_df2["Seconds"].cast(FloatType()))
@@ -179,7 +179,7 @@ def main():
         get_json_object("json", "$.LastLapTime.Value").alias("LastLapTime"),
         get_json_object("json", "$.NumberOfLaps").cast(
             IntegerType()).alias("Lap")
-        ).where("LastLapTime is not null")
+    ).where("LastLapTime is not null")
 
     laptime_query = laptime_df.writeStream\
         .outputMode("append")\
