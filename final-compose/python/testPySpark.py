@@ -91,11 +91,10 @@ def linearRegression(pilotNumber):
         NextLap = NextLap[0]["Lap"]+1
     NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
                                          "PilotNumber", "Lap", "Seconds"])
-    print("###########################################################################################")
-    #model = pipeline.fit(df)
-#
-    #predictions = model.transform(NextLap_df)
-#
+    model = pipeline.fit(df)
+
+    predictions = model.transform(NextLap_df)
+    predictions.show()
     ## predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
     ## predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
     #predictions = predictions.selectExpr(
