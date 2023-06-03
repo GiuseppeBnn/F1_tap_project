@@ -60,7 +60,7 @@ def sendToES(data: DataFrame, choose: int):
             # sendo to elasticsearch with d as float
             es.index(index="predictions", body=d)
 
-            print(d, type(d))
+            #print(d, type(d))
     if (choose == 2):
         data_json = data.toJSON().collect()
         for d in data_json:
@@ -70,41 +70,42 @@ def sendToES(data: DataFrame, choose: int):
 def linearRegression(pilotNumber):
     global lapTimeTotal_df
     global LastLapTime_df
-    global complete_df
-    df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr(
-        "PilotNumber as PilotNumber", "Lap as Lap", "LastLapTime as LapTime")
-    print("Dataframe del pilota " + pilotNumber)
-    df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(
-        0) * 60 + split(col("LapTime"), ":").getItem(1)))
-    df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-    df = df.select("Lap", "Seconds")
-    #df.show()
-    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
-    lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds")
-    pipeline = Pipeline(stages=[vectorAssembler, lr])
-    spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
-    NextLap = df.agg(max("Lap").alias("Lap")).collect()
-    if (NextLap[0]["Lap"] is None):
-        NextLap = 1
-    else:
-        NextLap = NextLap[0]["Lap"]+1
-    NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
-                                         "PilotNumber", "Lap", "Seconds"])
-    model = pipeline.fit(df)
+    
+    if (lapTimeTotal_df.where("PilotNumber = " + pilotNumber).where("LastLapTime != ''").count() != 0):
+        df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr(
+            "PilotNumber as PilotNumber", "Lap as Lap", "LastLapTime as LapTime")
+        print("Dataframe del pilota " + pilotNumber)
+        df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(
+            0) * 60 + split(col("LapTime"), ":").getItem(1)))
+        df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
+        df = df.select("Lap", "Seconds")
+        #df.show()
+        vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
+        lr = LinearRegression(featuresCol="features",
+                              regParam=0.01, labelCol="Seconds")
+        pipeline = Pipeline(stages=[vectorAssembler, lr])
+        spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
+        NextLap = df.agg(max("Lap").alias("Lap")).collect()
+        if (NextLap[0]["Lap"] is None):
+            NextLap = 1
+        else:
+            NextLap = NextLap[0]["Lap"]+1
+        NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
+                                             "PilotNumber", "Lap", "Seconds"])
+        model = pipeline.fit(df)
 
-    predictions = model.transform(NextLap_df)
-    predictions.show()
-    ## predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
-    ## predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
-    predictions = predictions.selectExpr(
-        "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
-    predictions = predictions.withColumn(
-        "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
-    predictions = predictions.withColumn("@timestamp", current_timestamp())
-    predictions.show()
-    #sendToES(predictions, 1)
-#
+        predictions = model.transform(NextLap_df)
+        predictions.show()
+        ## predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
+        ## predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
+        predictions = predictions.selectExpr(
+            "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
+        predictions = predictions.withColumn(
+            "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
+        predictions = predictions.withColumn("@timestamp", current_timestamp())
+        predictions.show()
+        sendToES(predictions, 1)
+#   
     #print("mando a ES")
 
 

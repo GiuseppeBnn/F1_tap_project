@@ -16,7 +16,15 @@ def testLogstash():
             print("Logstash not ready")
             time.sleep(5)
             continue
-    
+def sendToLogstash3(data):
+    data = json.dumps(data)
+    data = data.encode('utf-8')
+    #print(data)
+    #print("inviato 3")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('logstash', 5002))
+    sock.sendall(data)
+    sock.close() 
 
 def sendToLogstash2(data):
     data = json.dumps(data)
@@ -113,7 +121,12 @@ def checkWeather(data):
 #    else:
 #        return False
     
-            
+def checkGapTimeData(data):
+    data = str(data["M"][0]["A"][1])
+    if data.find("GapToLeader") != -1:
+        return True
+    else:
+        return False            
 
 def sender(data, pilotsNumbers):
     try:
@@ -129,15 +142,17 @@ def sender(data, pilotsNumbers):
     dataString = str(data)
     for pilotNumber in pilotsNumbers:
         if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 :
-            #pilotinfo = data["M"][0]["A"][1]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
+            if checkGapTimeData(data):
+                sendToLogstash3(pilotinfo)
             #print("mando  " + str(pilotinfo))
-            sendToLogstash(pilotinfo)
+            else:
+                sendToLogstash(pilotinfo)
         elif dataString.find("'R'") != -1:
-            #pilotinfo = data["R"]["TimingData"]["Lines"][str(pilotNumber)]
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=True)
             #print("mando  " + str(pilotinfo))
             sendToLogstash(pilotinfo)
+
 
 
 
