@@ -78,20 +78,20 @@ def linearRegression(pilotNumber):
         0) * 60 + split(col("LapTime"), ":").getItem(1)))
     df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
     df = df.select("Lap", "Seconds")
-    df.show()
-    #vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
-    #lr = LinearRegression(featuresCol="features",
-                          #regParam=0.01, labelCol="Seconds")
-    #pipeline = Pipeline(stages=[vectorAssembler, lr])
-    #spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
-    #NextLap = df.agg(max("Lap").alias("Lap")).collect()
-    #if (NextLap[0]["Lap"] is None):
-    #    NextLap = 1
-    #else:
-    #    NextLap = NextLap[0]["Lap"]+1
-    #NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
-    #                                     "PilotNumber", "Lap", "Seconds"])
-#
+    #df.show()
+    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
+    lr = LinearRegression(featuresCol="features",
+                          regParam=0.01, labelCol="Seconds")
+    pipeline = Pipeline(stages=[vectorAssembler, lr])
+    spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
+    NextLap = df.agg(max("Lap").alias("Lap")).collect()
+    if (NextLap[0]["Lap"] is None):
+        NextLap = 1
+    else:
+        NextLap = NextLap[0]["Lap"]+1
+    NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
+                                         "PilotNumber", "Lap", "Seconds"])
+    print("###########################################################################################")
     #model = pipeline.fit(df)
 #
     #predictions = model.transform(NextLap_df)
