@@ -78,7 +78,7 @@ services:
     depends_on:
       - broker
       - zookeeper
-      - kafka-ui
+      #- kafka-ui
     entrypoint: [ '/bin/sh', '-c' ]
     command: |
       "
