@@ -162,7 +162,7 @@ def main():
         get_json_object("json", "$.LastLapTime.Value").alias("LastLapTime"),
         get_json_object("json", "$.NumberOfLaps").cast(
             IntegerType()).alias("Lap")
-    ).where("Lap is not null")
+    ).where("Lap is not null and LastLapTime is not null")
 
     laptime_query = laptime_df.writeStream\
         .outputMode("append")\
