@@ -55,11 +55,11 @@ def linearRegression(pilotNumber):
     df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(
         0) * 60 + split(col("LapTime"), ":").getItem(1)))
     df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-    df = df.select("Lap", "Seconds").orderBy("Lap", ascending=False).limit(15)
+    df = df.select("Lap", "Seconds").orderBy("Lap", ascending=False).limit(7)
     #df.show()
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds")
+                          regParam=0.01, labelCol="Seconds", maxIter=7)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
     NextLap = df.agg(max("Lap").alias("Lap")).collect()
