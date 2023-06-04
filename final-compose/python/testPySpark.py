@@ -48,42 +48,40 @@ def linearRegression(pilotNumber):
     global lapTimeTotal_df
     global LastLapTime_df
     
-    if (lapTimeTotal_df.where("PilotNumber = " + pilotNumber).where("LastLapTime != ''").count() != 0):
-        df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr(
-            "PilotNumber as PilotNumber", "Lap as Lap", "LastLapTime as LapTime")
-        print("Dataframe del pilota " + pilotNumber)
-        df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(
-            0) * 60 + split(col("LapTime"), ":").getItem(1)))
-        df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-        df = df.select("Lap", "Seconds").orderBy("Lap", ascending=False).limit(15)
-        #df.show()
-        vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
-        lr = LinearRegression(featuresCol="features",
-                              regParam=0.01, labelCol="Seconds")
-        pipeline = Pipeline(stages=[vectorAssembler, lr])
-        spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
-        NextLap = df.agg(max("Lap").alias("Lap")).collect()
-        if (NextLap[0]["Lap"] is None):
-            NextLap = 1
-        else:
-            NextLap = NextLap[0]["Lap"]+1
-        NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
-                                             "PilotNumber", "Lap", "Seconds"])
-        model = pipeline.fit(df)
-
-        predictions = model.transform(NextLap_df)
-        #predictions.show()
-        predictions = predictions.selectExpr(
-            "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
-        predictions = predictions.withColumn(
-            "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
-        predictions = predictions.withColumn(
-            "PilotNumber", predictions["PilotNumber"].cast(IntegerType()))
-        predictions = predictions.withColumn("@timestamp", current_timestamp())
-        predictions.show()
-        sendToES(predictions, 1)
-
-        #print("mando a ES")
+    
+    df = lapTimeTotal_df.where("PilotNumber = " + pilotNumber).selectExpr(
+        "PilotNumber as PilotNumber", "Lap as Lap", "LastLapTime as LapTime")
+    print("Dataframe del pilota " + pilotNumber)
+    df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(
+        0) * 60 + split(col("LapTime"), ":").getItem(1)))
+    df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
+    df = df.select("Lap", "Seconds").orderBy("Lap", ascending=False).limit(15)
+    #df.show()
+    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
+    lr = LinearRegression(featuresCol="features",
+                          regParam=0.01, labelCol="Seconds")
+    pipeline = Pipeline(stages=[vectorAssembler, lr])
+    spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
+    NextLap = df.agg(max("Lap").alias("Lap")).collect()
+    if (NextLap[0]["Lap"] is None):
+        NextLap = 1
+    else:
+        NextLap = NextLap[0]["Lap"]+1
+    NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
+                                         "PilotNumber", "Lap", "Seconds"])
+    model = pipeline.fit(df)
+    predictions = model.transform(NextLap_df)
+    #predictions.show()
+    predictions = predictions.selectExpr(
+        "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
+    predictions = predictions.withColumn(
+        "NextLapTimePrediction", predictions["NextLapTimePrediction"].cast(FloatType()))
+    predictions = predictions.withColumn(
+        "PilotNumber", predictions["PilotNumber"].cast(IntegerType()))
+    predictions = predictions.withColumn("@timestamp", current_timestamp())
+    predictions.show()
+    sendToES(predictions, 1)
+    #print("mando a ES")
 
 
 def updateLapTimeTotal(df: DataFrame, epoch_id):
