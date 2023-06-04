@@ -90,7 +90,11 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
 
     global lapTimeTotal_df
     global LastLapTime_df
-    if df.count() != 0 and df["PilotNumber"]!="":
+    if df.count() != 0:
+
+        print(df.collect())
+
+
         lapTimeTotal_df = lapTimeTotal_df.union(df)
         # lapTimeTotal_df.show()
         limited_df = lapTimeTotal_df.orderBy(
