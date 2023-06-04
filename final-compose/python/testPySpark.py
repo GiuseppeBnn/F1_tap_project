@@ -90,7 +90,7 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
 
     global lapTimeTotal_df
     global LastLapTime_df
-    if df.count() != 0:
+    if df.count() != 0 and df["PilotNumber"]!="":
         lapTimeTotal_df = lapTimeTotal_df.union(df)
         # lapTimeTotal_df.show()
         limited_df = lapTimeTotal_df.orderBy(
@@ -104,7 +104,8 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
             0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         LastLapTime_df2 = LastLapTime_df2.withColumn("Seconds", LastLapTime_df2["Seconds"].cast(FloatType()))
         sendToES(LastLapTime_df2, 2)
-        LastLapTime_df2.show()
+        #LastLapTime_df2.show()
+        lapTimeTotal_df.show()
 
         for row in df.collect():
             linearRegression(str(row.PilotNumber))
