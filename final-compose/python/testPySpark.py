@@ -28,29 +28,6 @@ LastLapTime_df = None
 complete_df = None
 es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 
-
-#mapping = {
-#    "mappings": {
-#        "properties": {
-#            "PilotNumber": {
-#                "type": "integer"
-#            },
-#            "Lap": {
-#                "type": "integer"
-#            },
-#            "NextLapTimePrediction": {
-#                "type": "float"
-#            },
-#            "timestamp": {
-#                "type": "date"
-#            }
-#        }
-#    }
-#}
-#es.delete_by_query(index="predictions", body={"query": {"match_all": {}}})
-#es.indices.create(index="predictions", body=mapping)
-
-
 def sendToES(data: DataFrame, choose: int):
 
     global es
@@ -78,11 +55,11 @@ def linearRegression(pilotNumber):
         df = df.withColumn("Seconds", (split(col("LapTime"), ":").getItem(
             0) * 60 + split(col("LapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-        df = df.select("Lap", "Seconds")
+        df = df.select("Lap", "Seconds").orderBy("Lap", ascending=False).limit(15)
         #df.show()
         vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
         lr = LinearRegression(featuresCol="features",
-                              regParam=0.01, labelCol="Seconds", maxIter=15)
+                              regParam=0.01, labelCol="Seconds")
         pipeline = Pipeline(stages=[vectorAssembler, lr])
         spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
         NextLap = df.agg(max("Lap").alias("Lap")).collect()
@@ -96,8 +73,6 @@ def linearRegression(pilotNumber):
 
         predictions = model.transform(NextLap_df)
         #predictions.show()
-        ## predictions = predictions.withColumn("prediction", concat( lit(floor(col("prediction")/60)), lit(":"), format_number((col("prediction")%60), 3)))
-        ## predictions = predictions.withColumn("prediction", predictions["prediction"].cast(StringType()))
         predictions = predictions.selectExpr(
             "PilotNumber as PilotNumber", "Lap as NextLap", "prediction as NextLapTimePrediction")
         predictions = predictions.withColumn(
@@ -107,8 +82,8 @@ def linearRegression(pilotNumber):
         predictions = predictions.withColumn("@timestamp", current_timestamp())
         predictions.show()
         sendToES(predictions, 1)
-#   
-    #print("mando a ES")
+
+        #print("mando a ES")
 
 
 def updateLapTimeTotal(df: DataFrame, epoch_id):
@@ -125,7 +100,6 @@ def updateLapTimeTotal(df: DataFrame, epoch_id):
         LastLapTime_df2 = LastLapTime_df2.join(
             limited_df, ["PilotNumber", "Lap"], "inner")
         LastLapTime_df2 = LastLapTime_df2.withColumn("@timestamp", current_timestamp())
-        #converti LastLapTime in secondi
         LastLapTime_df2 = LastLapTime_df2.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
             0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         LastLapTime_df2 = LastLapTime_df2.withColumn("Seconds", LastLapTime_df2["Seconds"].cast(FloatType()))
@@ -190,9 +164,6 @@ def main():
         .start()
 
     laptime_query.awaitTermination()
-
-    # query = df.writeStream.outputMode("append").format("console").start().awaitTermination()
-
 
 if __name__ == "__main__":
     main()
