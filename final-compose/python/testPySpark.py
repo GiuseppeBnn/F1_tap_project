@@ -82,7 +82,7 @@ def linearRegression(pilotNumber):
         #df.show()
         vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features")
         lr = LinearRegression(featuresCol="features",
-                              regParam=0.01, labelCol="Seconds")
+                              regParam=0.01, labelCol="Seconds", maxIter=15)
         pipeline = Pipeline(stages=[vectorAssembler, lr])
         spark20 = SparkSession.builder.appName("SparkF1").getOrCreate()
         NextLap = df.agg(max("Lap").alias("Lap")).collect()
