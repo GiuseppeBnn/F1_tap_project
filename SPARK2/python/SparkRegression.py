@@ -114,7 +114,8 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         linearRegression(row.PilotNumber)
 
 def showBatch(df, epoch_id):
-    df.show()  #for debugging
+    #trucate false per vedere tutto il contenuto della colonna
+    df.show(truncate=False)
 def main():
     spark = SparkSession.builder \
         .appName("SparkF1") \
