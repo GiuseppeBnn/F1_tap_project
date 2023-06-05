@@ -151,7 +151,7 @@ def main():
     #                .option("kafka.session.timeout.ms", "10000")
     #                .load() )
 
-    #df2 = df.select(col("value").cast("string").alias("json"))
+    df2 = df.select(col("value").cast("string").alias("json"))
 
     #laptime_df = df2.select(
     #    get_json_object("json", "$.PilotNumber").cast(
@@ -166,7 +166,7 @@ def main():
     #    .foreachBatch(updateLapTimeTotal_df)\
     #    .start()
 
-    laptime_query = df.writeStream.format("console").outputMode("append").start()
+    laptime_query = df2.writeStream.format("console").outputMode("append").start()
     laptime_query.awaitTermination()
 
 if __name__ == "__main__":
