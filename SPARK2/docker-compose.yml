@@ -12,8 +12,7 @@ services:
       broker:
         condition: service_healthy
     container_name: pyspark
-    volumes:
-      - ./python/SparkRegression.py:/home/jovian/SparkRegression.py
+    
 
   #-------------------------------#
   # 🖥️ Zookeeper-service          #
