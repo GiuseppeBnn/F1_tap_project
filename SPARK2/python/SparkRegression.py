@@ -108,7 +108,7 @@ def sendToES(data: DataFrame, choose: int):
 
 def updateLapTimeTotal_df(row: Row):
     global pilotDataframes
-    if(row.count()!=0):
+    if(row.count("Lap")!=0):
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(row)
         #sendToES(pilotDataframes[row.PilotNumber], 2)
         print("PilotNumber: ", row.PilotNumber, " Lap: ", row.Lap, " LastLapTime: ", row.LastLapTime)
