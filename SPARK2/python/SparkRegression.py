@@ -118,7 +118,7 @@ def main():
     spark = SparkSession.builder \
         .appName("SparkF1") \
         .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("WARN")
 
     global lapTimeTotal_df
     lapTimeTotal_df = spark.createDataFrame(
@@ -151,7 +151,7 @@ def main():
     #                .option("kafka.session.timeout.ms", "10000")
     #                .load() )
 
-    df2 = df.select(col("value").cast("string").alias("json"))
+    #df2 = df.select(col("value").cast("string").alias("json"))
 
     #laptime_df = df2.select(
     #    get_json_object("json", "$.PilotNumber").cast(
