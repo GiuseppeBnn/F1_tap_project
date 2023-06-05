@@ -60,7 +60,7 @@ services:
   # 🖥️ Kakfa UI                  #
   #-------------------------------#
   kafka-ui:
-    image: provectuslabs/kafka-ui
+    image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     depends_on:
       - zookeeper
