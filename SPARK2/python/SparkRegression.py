@@ -166,7 +166,7 @@ def main():
     #    .foreachBatch(updateLapTimeTotal_df)\
     #    .start()
 
-    laptime_query = df2.writeStream.format("console").outputMode("append").start()
+    laptime_query = df.writeStream.format("console").outputMode("append").start()
     laptime_query.awaitTermination()
 
 if __name__ == "__main__":
