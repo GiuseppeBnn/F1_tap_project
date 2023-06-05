@@ -153,19 +153,20 @@ def main():
 
     df2 = df.select(col("value").cast("string").alias("json"))
 
-    laptime_df = df2.select(
-        get_json_object("json", "$.PilotNumber").cast(
-            IntegerType()).alias("PilotNumber"),
-        get_json_object("json", "$.LastLapTime.Value").alias("LastLapTime"),
-        get_json_object("json", "$.NumberOfLaps").cast(
-            IntegerType()).alias("Lap")
-    ).where("Lap is not null and LastLapTime is not null")
+    #laptime_df = df2.select(
+    #    get_json_object("json", "$.PilotNumber").cast(
+    #        IntegerType()).alias("PilotNumber"),
+    #    get_json_object("json", "$.LastLapTime.Value").alias("LastLapTime"),
+    #    get_json_object("json", "$.NumberOfLaps").cast(
+    #        IntegerType()).alias("Lap")
+    #).where("Lap is not null and LastLapTime is not null")
 
-    laptime_query = laptime_df.writeStream\
-        .outputMode("append")\
-        .foreachBatch(updateLapTimeTotal_df)\
-        .start()
+    #laptime_query = laptime_df.writeStream\
+    #    .outputMode("append")\
+    #    .foreachBatch(updateLapTimeTotal_df)\
+    #    .start()
 
+    laptime_query = df.writeStream.mode("append").format("console").start()
     laptime_query.awaitTermination()
 
 if __name__ == "__main__":
