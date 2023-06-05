@@ -18,15 +18,15 @@ laptime_schema = StructType([
 
 #es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 pilotDataframes = {}
+pipeline=None
 
-vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
-lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=10)
-pipeline = Pipeline(stages=[vectorAssembler, lr])
+
 
 def linearRegression(pilotNumber):
     pass
     global pilotDataframes
+    global pipeline
+    
     df=pilotDataframes[pilotNumber].orderBy("Lap", ascending=False).limit(5)
     if df.count() > 0:
         print("Dataframe del pilota " + pilotNumber)
@@ -38,7 +38,7 @@ def linearRegression(pilotNumber):
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
 
         NextLap = df.limit(1).select("Lap").collect() +1
-        
+
         #NextLap = df.agg(max("Lap").alias("Lap")).collect()
         #if (NextLap[0]["Lap"] is None):
         #    NextLap = 1
@@ -131,6 +131,12 @@ def main():
         .option("kafka.bootstrap.servers", "broker:29092") \
         .option("subscribe", "LiveTimingData") \
         .load()
+    
+
+    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
+    lr = LinearRegression(featuresCol="features",
+                          regParam=0.01, labelCol="Seconds", maxIter=10)
+    pipeline = Pipeline(stages=[vectorAssembler, lr])
 
     # df = (spark.readStream
     #                .format("kafka")

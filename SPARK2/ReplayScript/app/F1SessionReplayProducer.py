@@ -175,7 +175,7 @@ def Start():
     previousTime = -40
     deltaTime = 0
 
-    filejson = open("rawDataMonaco.json", "r")
+    filejson = open("rawDataMonacoshort.json", "r")
     for jsondata in filejson:
         
         if jsondata.find("{") != -1:
