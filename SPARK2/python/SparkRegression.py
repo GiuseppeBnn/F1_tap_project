@@ -113,7 +113,8 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         print("Aggiornato dataframe del pilota " + row.PilotNumber)
         linearRegression(row.PilotNumber)
 
-
+def showBatch(df, epoch_id):
+    df.show()  #for debugging
 def main():
     spark = SparkSession.builder \
         .appName("SparkF1") \
@@ -166,7 +167,7 @@ def main():
     #    .foreachBatch(updateLapTimeTotal_df)\
     #    .start()
 
-    laptime_query = df2.writeStream.format("console").outputMode("append").truncate(False).start()
+    laptime_query = df2.writeStream.foreachBatch(showBatch).start()
     laptime_query.awaitTermination()
 
 if __name__ == "__main__":
