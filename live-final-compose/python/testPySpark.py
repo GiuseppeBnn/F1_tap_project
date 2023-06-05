@@ -69,8 +69,6 @@ def linearRegression(pilotNumber):
         NextLap = NextLap[0]["Lap"]+1
     NextLap_df = spark20.createDataFrame([(pilotNumber, NextLap, 0)], [
                                          "PilotNumber", "Lap", "Seconds"])
-    if df.isEmpty():
-        return
     model = pipeline.fit(df)
     predictions = model.transform(NextLap_df)
     #predictions.show()
