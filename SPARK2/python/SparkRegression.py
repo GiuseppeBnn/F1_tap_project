@@ -106,12 +106,11 @@ def sendToES(data: DataFrame, choose: int):
 
 
 
-def updateLapTimeTotal_df(row: Row):
+def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
-    if(row.count("Lap")!=0):
-        pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(row)
-        #sendToES(pilotDataframes[row.PilotNumber], 2)
-        print("PilotNumber: ", row.PilotNumber, " Lap: ", row.Lap, " LastLapTime: ", row.LastLapTime)
+    for row in df.rdd.collect():
+        pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df)
+        print("Aggiornato dataframe del pilota " + row.PilotNumber)
         linearRegression(row.PilotNumber)
 
 
@@ -164,7 +163,7 @@ def main():
 
     laptime_query = laptime_df.writeStream\
         .outputMode("append")\
-        .foreach(updateLapTimeTotal_df)\
+        .foreachBatch(updateLapTimeTotal_df)\
         .start()
 
     laptime_query.awaitTermination()
