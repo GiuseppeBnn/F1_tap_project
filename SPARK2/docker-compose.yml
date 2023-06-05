@@ -132,26 +132,25 @@ services:
     command: >
       sh -c "python3 F1SessionReplayProducer.py"
     container_name: f1_replay_script
-
   #-------------------------------#
   # 🖥️ Elasticsearch             #
   #-------------------------------#
-  #  
-  #elasticsearch:
-  #  image: elasticsearch:8.7.1
-  #  container_name: elasticsearch
-  #  environment:
-  #    - discovery.type=single-node
-  #    - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-  #    - "xpack.security.enabled=false"
-  #  ports:
-  #    - "9200:9200"
-  #  healthcheck:
-  #    test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
-  #    interval: 30s
-  #    timeout: 10s
-  #    retries: 10  
-#
+  
+  elasticsearch:
+    image: elasticsearch:8.7.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "xpack.security.enabled=false"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10  
+
   #-------------------------------#
   # 🖥️ Kibana                    #
   #-------------------------------#
