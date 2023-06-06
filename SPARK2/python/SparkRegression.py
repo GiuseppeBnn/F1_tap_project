@@ -8,13 +8,6 @@ from pyspark.ml import Pipeline
 import requests as req
 import json
 import elasticsearch
-from pyspark.sql import Row
-
-
-laptime_schema = StructType([
-    StructField("PilotNumber", IntegerType(), nullable=False),
-    StructField("LastLapTime", StringType(), nullable=True),
-    StructField("Lap", IntegerType(), nullable=True)])
 
 #es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 pilotDataframes = {}
@@ -111,20 +104,16 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     for row in df.rdd.collect():
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df)
         print("Aggiornato dataframe del pilota " + row.PilotNumber)
-        linearRegression(row.PilotNumber)
+        #linearRegression(row.PilotNumber)
 
-def showBatch(df, epoch_id):
-    #trucate false per vedere tutto il contenuto della colonna
-    df.show(truncate=False)
+#def showBatch(df, epoch_id):
+#    #trucate false per vedere tutto il contenuto della colonna
+#    df.show(truncate=False)
 def main():
     spark = SparkSession.builder \
         .appName("SparkF1") \
         .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
-
-    global lapTimeTotal_df
-    lapTimeTotal_df = spark.createDataFrame(
-        spark.sparkContext.emptyRDD(), laptime_schema)
 
     df = spark \
         .readStream \
@@ -160,7 +149,9 @@ def main():
             IntegerType()).alias("PilotNumber"),
         get_json_object("json", "$.TimingData.LastLapTime.Value").alias("LastLapTime"),
         get_json_object("json", "$.TimingData.NumberOfLaps").cast(
-            IntegerType()).alias("Lap")
+            IntegerType()).alias("Lap"),
+        get_json_object("json", "$.@timestamp").alias("timestamp")    
+
     ).where("Lap is not null and LastLapTime is not null")
 
     #laptime_query = laptime_df.writeStream\
@@ -168,7 +159,7 @@ def main():
     #    .foreachBatch(updateLapTimeTotal_df)\
     #    .start()
 
-    laptime_query = laptime_df.writeStream.outputMode("append").foreachBatch(showBatch).start()
+    laptime_query = laptime_df.writeStream.outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
 
 if __name__ == "__main__":
