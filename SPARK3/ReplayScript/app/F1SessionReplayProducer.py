@@ -54,7 +54,7 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
         jsonData["PilotNumber"]=pilotsNumber
         if(checkGapTimeData(jsonData)):
-            jsonData["Gaptoleader"]= str(jsonData["GapToLeader"]).lstrip("+")
+            jsonData["GapToLeader"]= str(jsonData["GapToLeader"]).lstrip("+")
 
     
     return jsonData
@@ -96,21 +96,12 @@ def getPilotsData():
     return pilotList
 
 
-
-
 def checkWeather(data):
     if data["M"][0]["A"][0] == "WeatherData":
         sendToLogstash2(data["M"][0]["A"][1])
         return True
     else:
         return False
-
-#def checkRaceControlMessages(data):
-#    if data["M"][0]["A"][0] == "RaceControlMessages":
-#        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
-#        return True
-#    else:
-#        return False
     
 def checkGapTimeData(data):
     data = str(data["M"][0]["A"][1])
