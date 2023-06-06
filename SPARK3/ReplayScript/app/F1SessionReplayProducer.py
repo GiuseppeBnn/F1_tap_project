@@ -61,7 +61,7 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
 
 def timedSender(jsondata, pilotsNumbers, deltaTime):
     if deltaTime > 10 or deltaTime <= 0:
-        deltaTime = 0.1
+        deltaTime = 0.01
     elif deltaTime > 0: 
         time.sleep(float(deltaTime))
         sender(jsondata, pilotsNumbers)    
@@ -135,7 +135,6 @@ def sender(data, pilotsNumbers):
         if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 :
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
             if checkGapTimeData(data):
-
                 sendToLogstash3(pilotinfo)
             #print("mando  " + str(pilotinfo))
             else:
@@ -167,7 +166,7 @@ def Start():
     previousTime = -40
     deltaTime = 0
 
-    filejson = open("rawDataMonacoshort.json", "r")
+    filejson = open("rawDataMonaco.json", "r")
     for jsondata in filejson:
         
         if jsondata.find("{") != -1:
