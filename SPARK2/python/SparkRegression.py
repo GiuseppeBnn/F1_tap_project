@@ -23,7 +23,6 @@ laptime_schema = StructType([
 
 
 def linearRegression(pilotNumber):
-    pass
     global pilotDataframes
     global pipeline
     
@@ -33,30 +32,31 @@ def linearRegression(pilotNumber):
         df = df.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-        model = pipeline.fit(df)
-        print("Modello del pilota " + pilotNumber + " creato")
-        spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
-
-        NextLap = df.limit(1).select("Lap").collect() +1
-
-        #NextLap = df.agg(max("Lap").alias("Lap")).collect()
-        #if (NextLap[0]["Lap"] is None):
-        #    NextLap = 1
-        #else:
-        #    NextLap = NextLap[0]["Lap"]+1
-        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap, 0)], [
-                                         "PilotNumber", "Lap", "Seconds"])
-        predictions = model.transform(NextLap_df)
-        
-        predictions = predictions.selectExpr(
-        "PilotNumber as Pilot", "Lap as NextLap", "prediction")
-        predictions = predictions.withColumn(
-        "prediction", predictions["prediction"].cast(FloatType()))
-        predictions = predictions.withColumn(
-        "Pilot", predictions["Pilot"].cast(IntegerType()))
-        predictions = predictions.withColumn("@timestamp", current_timestamp())
-        predictions.show()
-        #sendToES(predictions, 1)
+        df.show()
+        #model = pipeline.fit(df)
+        #print("Modello del pilota " + pilotNumber + " creato")
+        #spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
+#
+        #NextLap = df.limit(1).select("Lap").collect() +1
+#
+        ##NextLap = df.agg(max("Lap").alias("Lap")).collect()
+        ##if (NextLap[0]["Lap"] is None):
+        ##    NextLap = 1
+        ##else:
+        ##    NextLap = NextLap[0]["Lap"]+1
+        #NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap, 0)], [
+        #                                 "PilotNumber", "Lap", "Seconds"])
+        #predictions = model.transform(NextLap_df)
+        #
+        #predictions = predictions.selectExpr(
+        #"PilotNumber as Pilot", "Lap as NextLap", "prediction")
+        #predictions = predictions.withColumn(
+        #"prediction", predictions["prediction"].cast(FloatType()))
+        #predictions = predictions.withColumn(
+        #"Pilot", predictions["Pilot"].cast(IntegerType()))
+        #predictions = predictions.withColumn("@timestamp", current_timestamp())
+        #predictions.show()
+        ##sendToES(predictions, 1)
         
 
 def makePilotList(pilotsRaw):
@@ -111,7 +111,7 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     for row in df.rdd.collect():
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df)
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-        #linearRegression(row.PilotNumber)
+        linearRegression(row.PilotNumber)
 
 #def showBatch(df, epoch_id):
 #    #trucate false per vedere tutto il contenuto della colonna
