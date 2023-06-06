@@ -100,9 +100,10 @@ services:
   # 🖥️ Logstash                  #
   #-------------------------------#
   logstash:
-    build:
-      context: ./LogstashDocker
-      dockerfile: Dockerfile
+    #build:
+    #  context: ./LogstashDocker
+    #  dockerfile: Dockerfile
+    image: logstash:8.7.1
     depends_on:
       broker:
         condition: service_healthy
