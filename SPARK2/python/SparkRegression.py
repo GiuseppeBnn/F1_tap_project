@@ -137,6 +137,7 @@ def main():
     lr = LinearRegression(featuresCol="features",
                           regParam=0.01, labelCol="Seconds", maxIter=10)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
+    print("Pipeline creata"+str(type(pipeline)))
 
     # df = (spark.readStream
     #                .format("kafka")
