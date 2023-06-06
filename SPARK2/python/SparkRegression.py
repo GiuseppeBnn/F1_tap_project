@@ -1,5 +1,5 @@
 from pyspark.sql.functions import *
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType, TimestampType
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
@@ -12,6 +12,13 @@ import elasticsearch
 #es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 pilotDataframes = {}
 pipeline=None
+
+laptime_schema = StructType([
+    StructField("PilotNumber", IntegerType(), True),
+    StructField("Lap", IntegerType(), True),
+    StructField("LastLapTime", StringType(), True),
+    StructField("timestamp", TimestampType(), True)
+])
 
 
 
@@ -115,6 +122,9 @@ def main():
         .getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
+    preparePilotsDataframes()
+
+
     df = spark \
         .readStream \
         .format("kafka") \
@@ -158,6 +168,8 @@ def main():
     #    .outputMode("append")\
     #    .foreachBatch(updateLapTimeTotal_df)\
     #    .start()
+
+
 
     laptime_query = laptime_df.writeStream.outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
