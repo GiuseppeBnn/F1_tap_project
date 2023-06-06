@@ -41,16 +41,14 @@ def linearRegression(pilotNumber):
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
         NextLap = df.limit(1).collect()[0]["Lap"]+1
+
         if(int(NextLap)%3==0 or pilotModels[pilotNumber]==0):
             print("riaddestro il modello del pilota " + str(pilotNumber))
             pilotModels[pilotNumber] = pipeline.fit(df)
             print("Modello del pilota " + str(pilotNumber) + " creato")
         
         model = pilotModels[pilotNumber]
-        
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
-#
-
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
         predictions = model.transform(NextLap_df)
 
