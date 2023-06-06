@@ -156,10 +156,10 @@ def main():
     df2 = df.select(col("value").cast("string").alias("json"))
 
     laptime_df = df2.select(
-        get_json_object("json", "$.PilotNumber").cast(
+        get_json_object("json", "$.TimingData.PilotNumber").cast(
             IntegerType()).alias("PilotNumber"),
-        get_json_object("json", "$.LastLapTime.Value").alias("LastLapTime"),
-        get_json_object("json", "$.NumberOfLaps").cast(
+        get_json_object("json", "$.TimingData.LastLapTime.Value").alias("LastLapTime"),
+        get_json_object("json", "$.TimingData.NumberOfLaps").cast(
             IntegerType()).alias("Lap")
     ).where("Lap is not null and LastLapTime is not null")
 
