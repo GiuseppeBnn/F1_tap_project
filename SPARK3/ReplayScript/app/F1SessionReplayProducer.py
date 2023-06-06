@@ -104,7 +104,7 @@ def checkWeather(data):
         return False
     
 def checkGapTimeData(data):
-    data = str(data["M"][0]["A"][1])
+    data = str(data)
     if data.find("GapToLeader") != -1:
         return True
     else:
