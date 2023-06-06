@@ -38,7 +38,7 @@ def sendToLogstash2(data):
 
 def sendToLogstash(data):
     data = json.dumps(data, indent=None).encode('utf-8')
-    print(data)
+    #print(data)
     #print("inviato")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(('logstash', 5000))
