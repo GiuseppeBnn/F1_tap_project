@@ -102,8 +102,8 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         df2=df.filter(df.PilotNumber==row.PilotNumber)
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-        pilotDataframes[row.pilotNumber]=(pilotDataframes[row.pilotNumber].orderBy("Lap", ascending=False).limit(5))
-        pilotDataframes[row.pilotNumber].show()
+        pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
+        pilotDataframes[row.PilotNumber].show()
         linearRegression(df2)
         sendToES(row, 2)
 
