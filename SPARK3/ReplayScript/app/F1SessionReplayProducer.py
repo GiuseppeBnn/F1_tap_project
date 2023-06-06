@@ -53,7 +53,10 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
     else:
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
         jsonData["PilotNumber"]=pilotsNumber
-        
+        if(checkGapTimeData(jsonData)):
+            jsonData["Gaptoleader"]= str(jsonData["GapToLeader"]).lstrip("+")
+
+    
     return jsonData
 
 def timedSender(jsondata, pilotsNumbers, deltaTime):
@@ -132,6 +135,7 @@ def sender(data, pilotsNumbers):
         if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 :
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
             if checkGapTimeData(data):
+
                 sendToLogstash3(pilotinfo)
             #print("mando  " + str(pilotinfo))
             else:

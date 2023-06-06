@@ -42,7 +42,7 @@ def linearRegression(pilotNumber):
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
         NextLap = df.limit(1).collect()[0]["Lap"]+1
 
-        if(int(NextLap)%3==0 or pilotModels[pilotNumber]==0):
+        if(int(NextLap)%3==0 or pilotModels[pilotNumber]==0 or int(NextLap)<5):
             print("riaddestro il modello del pilota " + str(pilotNumber))
             pilotModels[pilotNumber] = pipeline.fit(df)
             print("Modello del pilota " + str(pilotNumber) + " creato")
