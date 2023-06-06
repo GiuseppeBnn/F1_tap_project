@@ -28,7 +28,7 @@ def linearRegression(pilotNumber):
     
     df=pilotDataframes[pilotNumber].orderBy("Lap", ascending=False).limit(5)
     if df.count() > 0:
-        print("Dataframe del pilota " + pilotNumber)
+        print("Dataframe del pilota " + str(pilotNumber))
         df = df.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
