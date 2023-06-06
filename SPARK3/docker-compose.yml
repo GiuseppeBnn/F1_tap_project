@@ -35,7 +35,7 @@ services:
       - "8081:8081"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_MEMORY=3G
       - SPARK_WORKER_CORES=2
 
   spark-worker2:
@@ -48,9 +48,22 @@ services:
       - "8082:8082"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_MEMORY=3G
       - SPARK_WORKER_CORES=2
       - SPARK_WORKER_WEBUI_PORT=8082
+  spark-worker3:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker3
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8083:8083"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8083  
 
   #-------------------------------#
   # 🖥️ Zookeeper-service          #
