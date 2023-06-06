@@ -20,7 +20,7 @@ laptime_schema = StructType([
     StructField("@timestamp", TimestampType(), True)
 ])
 prediction_schema = StructType([
-    StructField("PilotNumber", IntegerType(), True),
+    StructField("PilotN", IntegerType(), True),
     StructField("Lap", IntegerType(), True)
 ])
 
@@ -42,8 +42,12 @@ def linearRegression(pilotNumber):
 
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
         predictions = model.transform(NextLap_df)
+
+        predictions = predictions.withColumnRenamed("Lap", "NextLap")
+
         predictions = predictions.withColumn("@timestamp", current_timestamp())
-        predictions.show()
+        #predictions.show()
+        print("Predizione del pilota " + str(pilotNumber) + " creata")
         sendToES(predictions, 1)
         
 
@@ -92,7 +96,7 @@ def sendToES(data : DataFrame, choose: int):
         data=data.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
             0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         data = data.withColumn("Seconds", data["Seconds"].cast(FloatType()))
-
+        data= data.withColumn("NextLap", data["NextLap"].cast(IntegerType()))
 
         data_json = data.toJSON().collect()
         for d in data_json:
