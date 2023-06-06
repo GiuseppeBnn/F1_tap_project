@@ -157,9 +157,9 @@ def main():
     laptime_df = df2.select(
         get_json_object("json", "$.TimingData.PilotNumber").cast(
             IntegerType()).alias("PilotNumber"),
-        get_json_object("json", "$.TimingData.LastLapTime.Value").alias("LastLapTime"),
         get_json_object("json", "$.TimingData.NumberOfLaps").cast(
             IntegerType()).alias("Lap"),
+        get_json_object("json", "$.TimingData.LastLapTime.Value").alias("LastLapTime"),
         get_json_object("json", "$.@timestamp").alias("timestamp")    
 
     ).where("Lap is not null and LastLapTime is not null")
