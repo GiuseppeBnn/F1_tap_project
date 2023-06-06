@@ -110,7 +110,7 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
     for row in df.rdd.collect():
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df)
-        print("Aggiornato dataframe del pilota " + row.PilotNumber)
+        print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
         #linearRegression(row.PilotNumber)
 
 #def showBatch(df, epoch_id):
