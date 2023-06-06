@@ -21,8 +21,7 @@ laptime_schema = StructType([
 ])
 prediction_schema = StructType([
     StructField("PilotNumber", IntegerType(), True),
-    StructField("Lap", IntegerType(), True),
-    StructField("timestamp", TimestampType(), True)
+    StructField("Lap", IntegerType(), True)
 ])
 
 
@@ -41,11 +40,10 @@ def linearRegression(pilotNumber):
 #
         NextLap = df.limit(1).collect()[0]["Lap"]+1
 
-        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap, 0)], prediction_schema)
+        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
         predictions = model.transform(NextLap_df)
+        predictions = predictions.withColumn("timestamp", current_timestamp())
         predictions.show()
-        #predictions = predictions.withColumn("@timestamp", current_timestamp())
-        #predictions.show()
         sendToES(predictions, 1)
         
 
