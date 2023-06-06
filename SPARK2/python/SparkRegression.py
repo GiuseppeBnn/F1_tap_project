@@ -37,7 +37,7 @@ def linearRegression(pilotNumber):
         print("Modello del pilota " + str(pilotNumber) + " creato")
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
 #
-        NextLap = df.limit(1).select("Lap").collect() +1
+        NextLap = df.limit(1).collect()[0]["Lap"]+1
 #
         ##NextLap = df.agg(max("Lap").alias("Lap")).collect()
         ##if (NextLap[0]["Lap"] is None):
