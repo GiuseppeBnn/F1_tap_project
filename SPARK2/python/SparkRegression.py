@@ -109,7 +109,8 @@ def sendToES(data: DataFrame, choose: int):
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
     for row in df.rdd.collect():
-        pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df)
+        df2=df.filter(df.PilotNumber==row.PilotNumber)
+        pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
         linearRegression(row.PilotNumber)
 
