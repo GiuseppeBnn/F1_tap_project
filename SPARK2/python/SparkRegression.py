@@ -104,8 +104,8 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
         pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
         pilotDataframes[row.PilotNumber].show()
-        linearRegression(df2)
-        sendToES(row, 2)
+        linearRegression(row.PilotNumber)
+        sendToES(df2, 2)
 
 #def showBatch(df, epoch_id):
 #    #trucate false per vedere tutto il contenuto della colonna
