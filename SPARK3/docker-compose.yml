@@ -35,7 +35,7 @@ services:
       - "8081:8081"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_MEMORY=4G
       - SPARK_WORKER_CORES=2
 
   spark-worker2:
@@ -48,7 +48,7 @@ services:
       - "8082:8082"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_MEMORY=4G
       - SPARK_WORKER_CORES=2
       - SPARK_WORKER_WEBUI_PORT=8082
   spark-worker3:
@@ -61,7 +61,7 @@ services:
       - "8083:8083"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_MEMORY=4G
       - SPARK_WORKER_CORES=2
       - SPARK_WORKER_WEBUI_PORT=8083  
 
