@@ -117,6 +117,7 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
 #    #trucate false per vedere tutto il contenuto della colonna
 #    df.show(truncate=False)
 def main():
+    global pipeline
     spark = SparkSession.builder \
         .appName("SparkF1") \
         .getOrCreate()
