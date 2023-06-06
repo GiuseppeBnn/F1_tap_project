@@ -53,15 +53,13 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
     else:
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
         jsonData["PilotNumber"]=pilotsNumber
-        if(checkGapTimeData(jsonData)):
-            jsonData["GapToLeader"]= str(jsonData["GapToLeader"]).lstrip("+")
 
     
     return jsonData
 
 def timedSender(jsondata, pilotsNumbers, deltaTime):
     if deltaTime > 10 or deltaTime <= 0:
-        deltaTime = 0.01
+        deltaTime = 0.1
     elif deltaTime > 0: 
         time.sleep(float(deltaTime))
         sender(jsondata, pilotsNumbers)    
@@ -96,15 +94,24 @@ def getPilotsData():
     return pilotList
 
 
+
+
 def checkWeather(data):
     if data["M"][0]["A"][0] == "WeatherData":
         sendToLogstash2(data["M"][0]["A"][1])
         return True
     else:
         return False
+
+#def checkRaceControlMessages(data):
+#    if data["M"][0]["A"][0] == "RaceControlMessages":
+#        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
+#        return True
+#    else:
+#        return False
     
 def checkGapTimeData(data):
-    data = str(data)
+    data = str(data["M"][0]["A"][1])
     if data.find("GapToLeader") != -1:
         return True
     else:
@@ -126,6 +133,7 @@ def sender(data, pilotsNumbers):
         if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 :
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
             if checkGapTimeData(data):
+
                 sendToLogstash3(pilotinfo)
             #print("mando  " + str(pilotinfo))
             else:
@@ -157,7 +165,7 @@ def Start():
     previousTime = -40
     deltaTime = 0
 
-    filejson = open("rawDataMonaco.json", "r")
+    filejson = open("rawDataMonacoshort.json", "r")
     for jsondata in filejson:
         
         if jsondata.find("{") != -1:
