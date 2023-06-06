@@ -17,7 +17,7 @@ laptime_schema = StructType([
     StructField("PilotNumber", IntegerType(), True),
     StructField("Lap", IntegerType(), True),
     StructField("LastLapTime", StringType(), True),
-    StructField("timestamp", TimestampType(), True)
+    StructField("@timestamp", TimestampType(), True)
 ])
 prediction_schema = StructType([
     StructField("PilotNumber", IntegerType(), True),
@@ -42,7 +42,7 @@ def linearRegression(pilotNumber):
 
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
         predictions = model.transform(NextLap_df)
-        predictions = predictions.withColumn("timestamp", current_timestamp())
+        predictions = predictions.withColumn("@timestamp", current_timestamp())
         predictions.show()
         sendToES(predictions, 1)
         
@@ -154,7 +154,7 @@ def main():
         get_json_object("json", "$.TimingData.NumberOfLaps").cast(
             IntegerType()).alias("Lap"),
         get_json_object("json", "$.TimingData.LastLapTime.Value").alias("LastLapTime"),
-        get_json_object("json", "$.@timestamp").alias("timestamp")    
+        get_json_object("json", "$.@timestamp").alias("@timestamp")    
 
     ).where("Lap is not null and LastLapTime is not null")
 
