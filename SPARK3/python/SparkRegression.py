@@ -106,7 +106,7 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         df2=df.filter(df.PilotNumber==row.PilotNumber)
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-        pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
+        pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(4))
         pilotDataframes[row.PilotNumber].show()
         linearRegression(row.PilotNumber)
         sendToES(df2, 2)
@@ -134,7 +134,7 @@ def main():
 
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=10)
+                          regParam=0.01, labelCol="Seconds", maxIter=5)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("Pipeline creata"+str(type(pipeline)))
 
