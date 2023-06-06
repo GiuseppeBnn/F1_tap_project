@@ -72,18 +72,6 @@ def roundFloat(timeOfJson_str):
     return actualTime
 
 
-def readJsonFile():
-    filejson = open("rawDataMonaco.json", "r")
-    jsondata = filejson.read()
-    filejson.close()  # funzione per preparare il file
-    #togli gli spazi tra } e {
-
-    jsondata= jsondata.strip
-    jsondata = jsondata.replace("}{", "}£{")
-    jsondatalist = jsondata.split("£")
-    return jsondatalist
-
-
 def makePilotList(pilotsRaw):
 
     pilots = []

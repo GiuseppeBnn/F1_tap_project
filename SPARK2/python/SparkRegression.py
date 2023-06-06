@@ -3,13 +3,13 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
-# from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml import Pipeline
 import requests as req
 import json
 import elasticsearch
 
-#es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
+
+es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 pilotDataframes = {}
 pipeline=None
 
@@ -19,44 +19,34 @@ laptime_schema = StructType([
     StructField("LastLapTime", StringType(), True),
     StructField("timestamp", TimestampType(), True)
 ])
+prediction_schema = StructType([
+    StructField("PilotNumber", IntegerType(), True),
+    StructField("Lap", IntegerType(), True),
+    StructField("timestamp", TimestampType(), True)
+])
 
 
 
 def linearRegression(pilotNumber):
     global pilotDataframes
     global pipeline
-    
-    df=pilotDataframes[pilotNumber].orderBy("Lap", ascending=False).limit(5)
+    df = pilotDataframes[pilotNumber]
     if df.count() > 0:
-        print("Dataframe del pilota " + str(pilotNumber))
         df = df.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-        df.show()
         model = pipeline.fit(df)
         print("Modello del pilota " + str(pilotNumber) + " creato")
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
 #
         NextLap = df.limit(1).collect()[0]["Lap"]+1
-#
-        ##NextLap = df.agg(max("Lap").alias("Lap")).collect()
-        ##if (NextLap[0]["Lap"] is None):
-        ##    NextLap = 1
-        ##else:
-        ##    NextLap = NextLap[0]["Lap"]+1
-        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap, 0,0)], [
-                                        "PilotNumber", "Lap", "Seconds", "timestamp"])
+
+        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap, 0)], prediction_schema)
         predictions = model.transform(NextLap_df)
         predictions.show()
-        #predictions = predictions.selectExpr(
-        #"PilotNumber as Pilot", "Lap as NextLap", "prediction")
-        #predictions = predictions.withColumn(
-        #"prediction", predictions["prediction"].cast(FloatType()))
-        #predictions = predictions.withColumn(
-        #"Pilot", predictions["Pilot"].cast(IntegerType()))
         #predictions = predictions.withColumn("@timestamp", current_timestamp())
         #predictions.show()
-        ##sendToES(predictions, 1)
+        sendToES(predictions, 1)
         
 
 def makePilotList(pilotsRaw):
@@ -90,7 +80,7 @@ def preparePilotsDataframes():
         
 
 
-def sendToES(data: DataFrame, choose: int):
+def sendToES(data : DataFrame, choose: int):
     global es
     if (choose == 1):
         data_json = data.toJSON().collect()
@@ -112,7 +102,10 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         df2=df.filter(df.PilotNumber==row.PilotNumber)
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-        linearRegression(row.PilotNumber)
+        pilotDataframes[row.pilotNumber]=(pilotDataframes[row.pilotNumber].orderBy("Lap", ascending=False).limit(5))
+        pilotDataframes[row.pilotNumber].show()
+        linearRegression(df2)
+        sendToES(row, 2)
 
 #def showBatch(df, epoch_id):
 #    #trucate false per vedere tutto il contenuto della colonna
