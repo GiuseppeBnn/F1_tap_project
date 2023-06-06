@@ -11,6 +11,7 @@ import elasticsearch
 
 es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
 pilotDataframes = {}
+pilotModels = {}
 pipeline=None
 
 laptime_schema = StructType([
@@ -24,21 +25,31 @@ prediction_schema = StructType([
     StructField("Lap", IntegerType(), True)
 ])
 
-
+def preparePilotModels():
+    pilots=getPilotsData()
+    global pilotModels
+    for pilot in pilots:
+        pilotModels[pilot] = 0
 
 def linearRegression(pilotNumber):
     global pilotDataframes
     global pipeline
+    global pilotModels
     df = pilotDataframes[pilotNumber]
     if df.count() > 0:
         df = df.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-        model = pipeline.fit(df)
-        print("Modello del pilota " + str(pilotNumber) + " creato")
+        NextLap = df.limit(1).collect()[0]["Lap"]+1
+        if(int(NextLap)%3==0 or pilotModels[pilotNumber]==0):
+            print("riaddestro il modello del pilota " + str(pilotNumber))
+            pilotModels[pilotNumber] = pipeline.fit(df)
+            print("Modello del pilota " + str(pilotNumber) + " creato")
+        
+        model = pilotModels[pilotNumber]
+        
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
 #
-        NextLap = df.limit(1).collect()[0]["Lap"]+1
 
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
         predictions = model.transform(NextLap_df)
@@ -110,14 +121,11 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         df2=df.filter(df.PilotNumber==row.PilotNumber)
         pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-        pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(4))
+        pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
         pilotDataframes[row.PilotNumber].show()
         linearRegression(row.PilotNumber)
         sendToES(df2, 2)
 
-#def showBatch(df, epoch_id):
-#    #trucate false per vedere tutto il contenuto della colonna
-#    df.show(truncate=False)
 def main():
     global pipeline
     spark = SparkSession.builder \
@@ -126,6 +134,7 @@ def main():
     spark.sparkContext.setLogLevel("WARN")
 
     preparePilotsDataframes()
+    preparePilotModels()
 
 
     df = spark \
@@ -138,7 +147,7 @@ def main():
 
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=5)
+                          regParam=0.01, labelCol="Seconds", maxIter=10)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("Pipeline creata"+str(type(pipeline)))
 
