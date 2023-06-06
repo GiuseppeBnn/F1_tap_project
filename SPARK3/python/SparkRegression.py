@@ -85,6 +85,7 @@ def preparePilotsDataframes():
 def sendToES(data : DataFrame, choose: int):
     global es
     if (choose == 1):
+        data= data.withColumn("NextLap", data["NextLap"].cast(IntegerType()))
         data_json = data.toJSON().collect()
         for d in data_json:
             # sendo to elasticsearch with d as float
@@ -96,8 +97,7 @@ def sendToES(data : DataFrame, choose: int):
         data=data.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
             0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         data = data.withColumn("Seconds", data["Seconds"].cast(FloatType()))
-        data= data.withColumn("NextLap", data["NextLap"].cast(IntegerType()))
-
+       
         data_json = data.toJSON().collect()
         for d in data_json:
             es.index(index="lastlaptimes", body=d)
