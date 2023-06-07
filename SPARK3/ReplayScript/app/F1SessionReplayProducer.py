@@ -4,6 +4,18 @@ import json
 import requests as req
 import socket
 
+#temp function for debug
+def tempLeclercData(jsonData):
+    if(str(jsonData).find("LastLapTime") != -1):
+        #append in un file leclerc.json
+        with open('leclerc.txt', 'a') as outfile:
+            json.dump(jsonData)
+            outfile.write("\n")
+            outfile.flush()
+        
+    
+
+
 
 def testLogstash():
     while True:
@@ -53,6 +65,8 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
     else:
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
         jsonData["PilotNumber"]=pilotsNumber
+        #temp
+        tempLeclercData(jsonData)
 
     
     return jsonData
@@ -164,6 +178,9 @@ def Start():
     testLogstash()  #bloccante, aspetta che logstash sia pronto
     previousTime = -40
     deltaTime = 0
+
+    file= open("leclerc.txt", "w")
+    file.close()
 
     filejson = open("rawDataMonacoshort.json", "r")
     for jsondata in filejson:
