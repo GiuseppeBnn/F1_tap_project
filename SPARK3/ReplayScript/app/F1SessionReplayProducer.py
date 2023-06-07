@@ -9,7 +9,7 @@ def tempLeclercData(jsonData):
     if(str(jsonData).find("LastLapTime") != -1):
         #append in un file leclerc.json
         with open('leclerc.txt', 'a') as outfile:
-            json.dump(jsonData)
+            json.dump(jsonData, outfile)
             outfile.write("\n")
             outfile.flush()
         
