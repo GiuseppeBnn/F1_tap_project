@@ -45,7 +45,7 @@ def linearRegression(pilotNumber):
         model = pilotModels[pilotNumber]
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
-        predictions = model.transform(NextLap_df)
+        predictions = model.transform(NextLap_df).withColumn("prediction", predictions["prediction"].cast(FloatType()))
 
         predictions = predictions.withColumnRenamed("Lap", "NextLap")
 
@@ -88,8 +88,8 @@ def preparePilotsDataframes():
 def sendToES(data : DataFrame, choose: int):
     global es
     if (choose == 1):
-        data= data.withColumn("NextLap", data["NextLap"].cast(IntegerType()))
         data_json = data.toJSON().collect()
+        print(data_json)
         for d in data_json:
             # sendo to elasticsearch with d as float
             es.index(index="predictions", body=d)
@@ -97,9 +97,10 @@ def sendToES(data : DataFrame, choose: int):
             #print(d, type(d))
     if (choose == 2):
         data_json = data.toJSON().collect()
+        print(data_json)
         for d in data_json:
             es.index(index="lastlaptimes", body=d)
-
+    
 
 
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
