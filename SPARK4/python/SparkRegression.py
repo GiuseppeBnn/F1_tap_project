@@ -109,7 +109,8 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         print("New batch arrived")
         for row in df.rdd.collect():
             df2=df.filter(df.PilotNumber==row.PilotNumber)
-            pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
+            df2=df2.repartition(3)
+            pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2).repartition(3)
             pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
             linearRegression(row.PilotNumber)
             sendToES(df2, 2)
