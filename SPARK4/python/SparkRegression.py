@@ -120,7 +120,7 @@ def main():
 
     spark = SparkSession.builder \
         .appName("SparkF1") \
-        .config("spark.sql.shuffle.partitions", "10")  \
+        .config("spark.sql.shuffle.partitions", "500")  \
         .getOrCreate()
     
 
