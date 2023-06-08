@@ -8,7 +8,8 @@ import socket
 def toSeconds(jsonData):
     if(str(jsonData).find("LastLapTime") != -1):
         #converti da minuti e secondi e milliosecondi a float
-        time1=jsonData["LastLapTime"]
+        time1=str(jsonData["LastLapTime"])
+        
         time1=float(time1.split(":")[0]*60+time1.split(":")[1])
         jsonData["LastLapTime"]=time1
     return jsonData    
