@@ -116,7 +116,9 @@ def sendToES(data : DataFrame, choose: int):
 
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
+    print("New batch arrived")
     for row in df.rdd.collect():
+        df.show()    #added for debug
         df2=df.filter(df.PilotNumber==row.PilotNumber)
         temp=pilotDataframes[row.PilotNumber].union(df2)
         pilotDataframes[row.PilotNumber] = temp
