@@ -38,6 +38,8 @@ def linearRegression(pilotNumber):
     df = pilotDataframes[pilotNumber]
     if df.count() > 0:
         NextLap = df.limit(1).collect()[0]["Lap"]+1
+        #cast Seconds to float
+        df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
         df.show()
         if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<4):
             print("riaddestro il modello del pilota " + str(pilotNumber))
