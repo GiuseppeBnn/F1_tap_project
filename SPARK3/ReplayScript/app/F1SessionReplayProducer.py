@@ -12,6 +12,7 @@ def tempLeclercData(jsonData):
             json.dump(jsonData, outfile)
             outfile.write("\n")
             outfile.flush()
+            print(str(jsonData))
         
     
 
@@ -182,7 +183,7 @@ def Start():
     file= open("leclerc.txt", "w")
     file.close()
 
-    filejson = open("rawDataMonacoshort.json", "r")
+    filejson = open("rawSpain.json", "r")
     for jsondata in filejson:
         
         if jsondata.find("{") != -1:
