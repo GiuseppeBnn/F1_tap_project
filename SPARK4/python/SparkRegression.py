@@ -37,27 +37,20 @@ def linearRegression(pilotNumber):
     global pilotModels
     df = pilotDataframes[pilotNumber]
     if df.count() > 0:
-        NextLap = df.limit(1).collect()[0]["Lap"]+1
+        NextLap = df.agg(max("Lap")).collect()[0][0] + 1
         #df.show()
-        print("Provo a creare il modello del pilota " + str(pilotNumber))
         if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<4):
-            print("riaddestro il modello del pilota " + str(pilotNumber))
-            pilotModels[pilotNumber] = pipeline.fit(df)
-            print("Modello del pilota " + str(pilotNumber) + " creato")
-        
+            pilotModels[pilotNumber] = pipeline.fit(df)        
 
         model = pilotModels[pilotNumber]
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
-        print("Provo a fare la predizione del pilota " + str(pilotNumber))
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
-        print("Predizione del pilota " + str(pilotNumber) + " creata")
         predictions = model.transform(NextLap_df)
 
         predictions = predictions.withColumnRenamed("Lap", "NextLap")
 
         predictions = predictions.withColumn("@timestamp", current_timestamp())
         #predictions.show()
-        print("Provo a inviare la predizione del pilota " + str(pilotNumber))
         sendToES(predictions, 1)
         
 
@@ -103,7 +96,6 @@ def sendToES(data : DataFrame, choose: int):
 
             #print(d, type(d))
     if (choose == 2):
-        data=data.withColumn("Seconds", data["Seconds"].cast(FloatType()))
         data_json = data.toJSON().collect()
         for d in data_json:
             es.index(index="lastlaptimes", body=d)
@@ -114,17 +106,10 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
     if df.count() > 0:
         print("New batch arrived")
-        df.show()    #added for debug
         for row in df.rdd.collect():
-        
             df2=df.filter(df.PilotNumber==row.PilotNumber)
             pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
-            print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-            #seleziona gli utlimi 5 giri per pilota
             pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
-            print("Ridotto dataframe del pilota " + str(row.PilotNumber))
-            pilotDataframes[row.PilotNumber]= pilotDataframes[row.PilotNumber].withColumn("Seconds", pilotDataframes[row.PilotNumber]["Seconds"].cast(FloatType()))
-            print("Cambiato tipo di Seconds")
             linearRegression(row.PilotNumber)
             sendToES(df2, 2)
 
@@ -180,8 +165,9 @@ def main():
             IntegerType()).alias("PilotNumber"),
         get_json_object("json", "$.TimingData.NumberOfLaps").cast(
             IntegerType()).alias("Lap"),
-        get_json_object("json", "$.TimingData.LastLapTime.Value").alias("Seconds"),
-        get_json_object("json", "$.@timestamp").alias("@timestamp")    
+        get_json_object("json", "$.TimingData.LastLapTime.Value").cast(
+            FloatType()).alias("Seconds"),
+        get_json_object("json", "$.@timestamp").alias("@timestamp")   
 
     ).where("Lap is not null and Seconds is not null")
 
