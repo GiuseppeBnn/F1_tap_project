@@ -39,7 +39,7 @@ def linearRegression(pilotNumber):
     if df.count() > 0:
         df = df.withColumn("Seconds", (split(col("LastLapTime"), ":").getItem(
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
-        df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
+        #df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
         NextLap = df.limit(1).collect()[0]["Lap"]+1
         df.show()
         if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<4):

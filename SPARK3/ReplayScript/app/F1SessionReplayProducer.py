@@ -4,15 +4,14 @@ import json
 import requests as req
 import socket
 
-#temp function for debug
-def tempLeclercData(jsonData):
+
+def toSeconds(jsonData):
     if(str(jsonData).find("LastLapTime") != -1):
-        #append in un file leclerc.json
-        with open('leclerc.txt', 'a') as outfile:
-            json.dump(jsonData, outfile)
-            outfile.write("\n")
-            outfile.flush()
-            print(str(jsonData))
+        #converti da minuti e secondi e milliosecondi a float
+        time1=jsonData["LastLapTime"]
+        time1=float(time1.split(":")[0]*60+time1.split(":")[1])
+        jsonData["LastLapTime"]=time1
+    return jsonData    
         
     
 
@@ -67,7 +66,7 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
         jsonData["PilotNumber"]=pilotsNumber
         #temp
-        tempLeclercData(jsonData)
+        
 
     
     return jsonData

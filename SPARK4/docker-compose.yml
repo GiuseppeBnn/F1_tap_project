@@ -1,0 +1,230 @@
+version: '3.9'
+services:
+
+  #-------------------------------#
+  # 🖥️ Pyspark                   #
+  #-------------------------------#
+  pyspark:
+    build: . 
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    container_name: pyspark
+    volumes:
+      - ./python/SparkRegression.py:/home/jovyan/SparkRegression.py
+    
+  spark-master:
+    image: bde2020/spark-master:3.3.0-hadoop3.3
+    container_name: spark-master
+    ports:
+      - "7077:7077"
+      - "8085:8085"
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+      - SPARK_MASTER_WEBUI_PORT=8085
+      - SPARK_WORKLOAD=master
+      - SPARK_DRIVER_MEMORY=3g
+
+  spark-worker:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - SPARK_DRIVER_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=3G
+      - SPARK_WORKLOAD=worker
+
+
+  spark-worker2:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker2
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8082:8082"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8082
+      - SPARK_DRIVER_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=3G
+      - SPARK_WORKLOAD=worker
+      
+  spark-worker3:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker3
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8083:8083"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8083  
+      - SPARK_DRIVER_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=3G
+      - SPARK_WORKLOAD=worker
+
+
+  #-------------------------------#
+  # 🖥️ Zookeeper-service          #
+  #-------------------------------#
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 10s
+      retries: 5  
+
+  #-------------------------------#
+  # 🖥️ Kafka-Broker              #
+  #-------------------------------#
+  broker:
+    image: confluentinc/cp-kafka:latest
+    container_name: broker
+    ports:
+      - "9092:9092"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 20s
+      timeout: 10s
+      retries: 10  
+
+ # #-------------------------------#
+ # # 🖥️ Kakfa UI                  #
+ # #-------------------------------#
+ # kafka-ui:
+ #   image: provectuslabs/kafka-ui:latest
+ #   container_name: kafka-ui
+ #   depends_on:
+ #     - zookeeper
+ #     - broker
+ #   ports:
+ #     - "8080:8080"
+ #   restart: always
+ #   environment:
+ #     KAFKA_CLUSTERS_0_NAME: local
+ #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:29092
+ #     KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
+  #-------------------------------#
+  # 🖥️ Initialize topics          #
+  #-------------------------------#
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - broker
+      - zookeeper
+      #- kafka-ui
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server broker:29092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists --topic LiveTimingData --replication-factor 1 --partitions 1
+      
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server broker:29092 --list
+      "
+
+  #-------------------------------#
+  # 🖥️ Logstash                  #
+  #-------------------------------#
+  logstash:
+    image: logstash:8.7.1
+    depends_on:
+      broker:
+        condition: service_healthy
+    container_name: logstash
+    volumes:
+      - ./LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
+      - ./pipelines/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+    environment: 
+      - "LS_JAVA_OPTS=-Xms1g -Xmx2g"
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    
+
+  #-------------------------------#
+  # 🖥️ F1 Replay Script           #
+  #-------------------------------#
+  replay_script:
+    build:
+      context: ./ReplayScript
+      dockerfile: Dockerfile
+
+    depends_on:
+       - logstash
+      
+    command: >
+      sh -c "python3 F1SessionReplayProducer.py"
+    container_name: f1_replay_script
+  #-------------------------------#
+  # 🖥️ Elasticsearch             #
+  #-------------------------------#
+  
+  elasticsearch:
+    image: elasticsearch:8.7.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "xpack.security.enabled=false"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 40s
+      timeout: 10s
+      retries: 10  
+
+  #-------------------------------#
+  # 🖥️ Kibana                    #
+  #-------------------------------#
+
+  kibana:
+    image: kibana:8.7.1
+    container_name: kibana
+    ports:
+      - 5601:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200  
