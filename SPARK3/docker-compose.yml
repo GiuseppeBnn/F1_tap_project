@@ -175,7 +175,7 @@ services:
       - ./LogstashDocker/pipeline/:/usr/share/logstash/pipeline/
       - ./pipelines/pipelines.yml:/usr/share/logstash/config/pipelines.yml
     environment: 
-      - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "LS_JAVA_OPTS=-Xms1g -Xmx2g"
     ports:
       - "5044:5044"
       - "9600:9600"
