@@ -38,9 +38,8 @@ def linearRegression(pilotNumber):
     df = pilotDataframes[pilotNumber]
     if df.count() > 0:
         NextLap = df.limit(1).collect()[0]["Lap"]+1
-        #cast Seconds to float
-        df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
-        df.show()
+        #df.show()
+        print("Provo a creare il modello del pilota " + str(pilotNumber))
         if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<4):
             print("riaddestro il modello del pilota " + str(pilotNumber))
             pilotModels[pilotNumber] = pipeline.fit(df)
@@ -49,14 +48,16 @@ def linearRegression(pilotNumber):
 
         model = pilotModels[pilotNumber]
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
+        print("Provo a fare la predizione del pilota " + str(pilotNumber))
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
+        print("Predizione del pilota " + str(pilotNumber) + " creata")
         predictions = model.transform(NextLap_df)
 
         predictions = predictions.withColumnRenamed("Lap", "NextLap")
 
         predictions = predictions.withColumn("@timestamp", current_timestamp())
         #predictions.show()
-        print("Predizione del pilota " + str(pilotNumber) + " creata")
+        print("Provo a inviare la predizione del pilota " + str(pilotNumber))
         sendToES(predictions, 1)
         
 
@@ -117,12 +118,13 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         for row in df.rdd.collect():
         
             df2=df.filter(df.PilotNumber==row.PilotNumber)
-            temp=pilotDataframes[row.PilotNumber].union(df2)
-            pilotDataframes[row.PilotNumber] = temp
-            temp.unpersist()
+            pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
             print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-            #seleziona gli utlimi 5 giri con lap distinti
+            #seleziona gli utlimi 5 giri per pilota
             pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
+            print("Ridotto dataframe del pilota " + str(row.PilotNumber))
+            pilotDataframes[row.PilotNumber]= pilotDataframes[row.PilotNumber].withColumn("Seconds", pilotDataframes[row.PilotNumber]["Seconds"].cast(FloatType()))
+            print("Cambiato tipo di Seconds")
             linearRegression(row.PilotNumber)
             sendToES(df2, 2)
 
