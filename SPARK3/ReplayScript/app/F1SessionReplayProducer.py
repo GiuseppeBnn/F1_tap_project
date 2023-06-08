@@ -183,7 +183,7 @@ def Start():
     file= open("leclerc.txt", "w")
     file.close()
 
-    filejson = open("rawSpain.json", "r")
+    filejson = open("rawDataMonacoshort.json", "r")
     for jsondata in filejson:
         
         if jsondata.find("{") != -1:
