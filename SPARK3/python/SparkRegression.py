@@ -41,7 +41,7 @@ def linearRegression(pilotNumber):
         0) * 60 + split(col("LastLapTime"), ":").getItem(1)))
         df = df.withColumn("Seconds", df["Seconds"].cast(FloatType()))
         NextLap = df.limit(1).collect()[0]["Lap"]+1
-
+        df.show()
         if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<4):
             print("riaddestro il modello del pilota " + str(pilotNumber))
             pilotModels[pilotNumber] = pipeline.fit(df)
@@ -123,7 +123,6 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
         temp.unpersist()
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
         pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
-        pilotDataframes[row.PilotNumber].show()
         linearRegression(row.PilotNumber)
         sendToES(df2, 2)
 
