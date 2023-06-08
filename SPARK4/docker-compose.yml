@@ -14,6 +14,8 @@ services:
     container_name: pyspark
     volumes:
       - ./python/SparkRegression.py:/home/jovyan/SparkRegression.py
+    ports:
+      - "4040:4040"  
     
   spark-master:
     image: bde2020/spark-master:3.3.0-hadoop3.3
