@@ -15,55 +15,69 @@ services:
     volumes:
       - ./python/SparkRegression.py:/home/jovyan/SparkRegression.py
     
-  #spark-master:
-  #  image: bde2020/spark-master:3.3.0-hadoop3.3
-  #  container_name: spark-master
-  #  ports:
-  #    - "7077:7077"
-  #    - "8085:8085"
-  #  environment:
-  #    - INIT_DAEMON_STEP=setup_spark
-  #    - SPARK_MASTER_WEBUI_PORT=8085
-#
-  #spark-worker:
-  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-  #  container_name: spark-worker
-#
-  #  depends_on:
-  #    - spark-master
-  #  ports:
-  #    - "8081:8081"
-  #  environment:
-  #    - "SPARK_MASTER=spark://spark-master:7077"
-  #    - SPARK_WORKER_MEMORY=4G
-  #    - SPARK_WORKER_CORES=2
-#
-  #spark-worker2:
-  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-  #  container_name: spark-worker2
-#
-  #  depends_on:
-  #    - spark-master
-  #  ports:
-  #    - "8082:8082"
-  #  environment:
-  #    - "SPARK_MASTER=spark://spark-master:7077"
-  #    - SPARK_WORKER_MEMORY=4G
-  #    - SPARK_WORKER_CORES=2
-  #    - SPARK_WORKER_WEBUI_PORT=8082
-  #spark-worker3:
-  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-  #  container_name: spark-worker3
-#
-  #  depends_on:
-  #    - spark-master
-  #  ports:
-  #    - "8083:8083"
-  #  environment:
-  #    - "SPARK_MASTER=spark://spark-master:7077"
-  #    - SPARK_WORKER_MEMORY=4G
-  #    - SPARK_WORKER_CORES=2
-  #    - SPARK_WORKER_WEBUI_PORT=8083  
+  spark-master:
+    image: bde2020/spark-master:3.3.0-hadoop3.3
+    container_name: spark-master
+    ports:
+      - "7077:7077"
+      - "8085:8085"
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+      - SPARK_MASTER_WEBUI_PORT=8085
+      - SPARK_WORKLOAD=master
+
+  spark-worker:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - SPARK_DRIVER_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_WORKLOAD=worker
+
+
+  spark-worker2:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker2
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8082:8082"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8082
+      - SPARK_DRIVER_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_WORKLOAD=worker
+      
+  spark-worker3:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker3
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8083:8083"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8083  
+      - SPARK_DRIVER_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_WORKLOAD=worker
+
 
   #-------------------------------#
   # 🖥️ Zookeeper-service          #

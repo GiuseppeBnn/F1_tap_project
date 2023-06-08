@@ -47,6 +47,7 @@ def linearRegression(pilotNumber):
             pilotModels[pilotNumber] = pipeline.fit(df)
             print("Modello del pilota " + str(pilotNumber) + " creato")
         
+
         model = pilotModels[pilotNumber]
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
         NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
@@ -126,9 +127,13 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
 
 def main():
     global pipeline
+
+
     spark = SparkSession.builder \
         .appName("SparkF1") \
         .getOrCreate()
+    
+
     spark.sparkContext.setLogLevel("WARN")
 
     preparePilotsDataframes()
@@ -140,6 +145,7 @@ def main():
         .format("kafka") \
         .option("kafka.bootstrap.servers", "broker:29092") \
         .option("subscribe", "LiveTimingData") \
+        .option("startingOffsets", "latest") \
         .load()
     
 
