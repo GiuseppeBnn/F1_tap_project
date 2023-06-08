@@ -118,7 +118,9 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
     for row in df.rdd.collect():
         df2=df.filter(df.PilotNumber==row.PilotNumber)
-        pilotDataframes[row.PilotNumber] = pilotDataframes[row.PilotNumber].union(df2)
+        temp=pilotDataframes[row.PilotNumber].union(df2)
+        pilotDataframes[row.PilotNumber] = temp
+        temp.unpersist()
         print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
         pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
         pilotDataframes[row.PilotNumber].show()
@@ -151,7 +153,7 @@ def main():
 
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=10)
+                          regParam=0.01, labelCol="Seconds", maxIter=6)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("Pipeline creata"+str(type(pipeline)))
 
