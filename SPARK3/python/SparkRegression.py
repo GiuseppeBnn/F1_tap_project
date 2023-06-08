@@ -116,18 +116,19 @@ def sendToES(data : DataFrame, choose: int):
 
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
-    print("New batch arrived")
-    df.show()    #added for debug
-    for row in df.rdd.collect():
+    if df.count() > 0:
+        print("New batch arrived")
+        df.show()    #added for debug
+        for row in df.rdd.collect():
         
-        df2=df.filter(df.PilotNumber==row.PilotNumber)
-        temp=pilotDataframes[row.PilotNumber].union(df2)
-        pilotDataframes[row.PilotNumber] = temp
-        temp.unpersist()
-        print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
-        pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
-        linearRegression(row.PilotNumber)
-        sendToES(df2, 2)
+            df2=df.filter(df.PilotNumber==row.PilotNumber)
+            temp=pilotDataframes[row.PilotNumber].union(df2)
+            pilotDataframes[row.PilotNumber] = temp
+            temp.unpersist()
+            print("Aggiornato dataframe del pilota " + str(row.PilotNumber))
+            pilotDataframes[row.PilotNumber]=(pilotDataframes[row.PilotNumber].orderBy("Lap", ascending=False).limit(5))
+            linearRegression(row.PilotNumber)
+            sendToES(df2, 2)
 
 def main():
     global pipeline
