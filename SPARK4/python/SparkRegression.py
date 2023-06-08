@@ -120,6 +120,7 @@ def main():
 
     spark = SparkSession.builder \
         .appName("SparkF1") \
+        .config("spark.sql.shuffle.partitions", "10")  \
         .getOrCreate()
     
 
@@ -177,7 +178,7 @@ def main():
     #    .foreachBatch(updateLapTimeTotal_df)\
     #    .start()
 
-
+    laptime_df = laptime_df.repartition("PilotNumber")
 
     laptime_query = laptime_df.writeStream.outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
