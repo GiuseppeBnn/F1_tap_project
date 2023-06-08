@@ -10,8 +10,8 @@ def toSeconds(jsonData):
         #converti da minuti e secondi e milliosecondi a float
         time1=str(jsonData["LastLapTime"])
         
-        time1=float(time1.split(":")[0]*60+time1.split(":")[1])
-        jsonData["LastLapTime"]=time1
+        time1=time1.split(":")[0]*60+time1.split(":")[1]
+        #jsonData["LastLapTime"]=time1
     return jsonData    
         
     
