@@ -102,7 +102,7 @@ def sendToES(data : DataFrame, choose: int):
 
             #print(d, type(d))
     if (choose == 2):
-       
+        data=data.withColumn("Seconds", data["Seconds"].cast(FloatType()))
         data_json = data.toJSON().collect()
         for d in data_json:
             es.index(index="lastlaptimes", body=d)
