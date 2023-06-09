@@ -51,13 +51,14 @@ def sendToLogstash2(data):
     sock.close()
 
 def sendToLogstash(data):
-    data = json.dumps(data, indent=None).encode('utf-8')
-    #print(data)
-    #print("inviato")
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('logstash', 5000))
-    sock.sendall(data)
-    sock.close()
+    if(str(data).find("LastLapTime")!=-1):
+        data = json.dumps(data, indent=None).encode('utf-8')
+        #print(data)
+        #print("inviato")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(('logstash', 5000))
+        sock.sendall(data)
+        sock.close()
 
 
 def jsonModifier(jsonData, pilotsNumber,recapBool):
