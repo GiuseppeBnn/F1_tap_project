@@ -1,6 +1,0 @@
-python-dateutil
-jsonlib-python3
-requests
-python-time
-websockets
-asyncio

@@ -1,8 +1,0 @@
-- pipeline.id: time
-  path.config: "/usr/share/logstash/pipeline/logstash.conf"
-
-- pipeline.id: other
-  path.config: "/usr/share/logstash/pipeline/logstash2.conf"  
-
-- pipeline.id: gaps
-  path.config: "/usr/share/logstash/pipeline/logstash3.conf"  
