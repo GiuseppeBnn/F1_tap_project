@@ -124,7 +124,7 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
             old_df=pilotDataframes[pn]
             df2=df.filter(df.PilotNumber==pn)
             pilotDataframes[pn] = old_df.union(df2).orderBy("Lap", ascending=False).limit(5).cache()
-            old_df.unpersist()
+            #old_df.unpersist()
             #pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
             linearRegression(pn)
             sendToES(df2, 2)
@@ -187,7 +187,6 @@ def main():
         get_json_object("json", "$.@timestamp").alias("@timestamp")   
 
     ).where("Lap is not null and Seconds is not null")
-    df.unpersist()
     laptime_query = df2.writeStream\
         .outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
