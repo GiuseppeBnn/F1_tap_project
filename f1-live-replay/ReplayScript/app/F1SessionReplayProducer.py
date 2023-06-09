@@ -4,7 +4,7 @@ import json
 import requests as req
 import socket
 
-#temp function for debug
+
 def toSeconds(jsonData):
     if(str(jsonData).find("LastLapTime") != -1):
         try:

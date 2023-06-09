@@ -7,26 +7,17 @@ import time
 import requests as req
 import socket
 
-def checkWeather(data):
-    if data["M"][0]["A"][0] == "WeatherData":
-        sendToLogstash2(data["M"][0]["A"][1])
-        return True
-    else:
-        return False
-
-#def checkRaceControlMessages(data):
-#    if data["M"][0]["A"][0] == "RaceControlMessages":
-#        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
-#        return True
-#    else:
-#        return False
+def toSeconds(jsonData):
+    if(str(jsonData).find("LastLapTime") != -1):
+        try:
+        #converti da minuti e secondi e milliosecondi a float
+            time1=str(jsonData["LastLapTime"]["Value"])
+            time1=int(time1.split(":")[0])*60+float(time1.split(":")[1])
+            jsonData["LastLapTime"]["Value"]=time1
+        except:
+            pass
+    return jsonData   
     
-def checkGapTimeData(data):
-    data = str(data["M"][0]["A"][1])
-    if data.find("GapToLeader") != -1:
-        return True
-    else:
-        return False  
 
 def testLogstash():
     while True:
@@ -60,13 +51,14 @@ def sendToLogstash2(data):
     sock.close()
 
 def sendToLogstash(data):
-    data = json.dumps(data).encode('utf-8')
-    #print(data)
-    #print("inviato")
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('logstash', 5000))
-    sock.sendall(data)
-    sock.close()
+    if(str(data).find("LastLapTime")!=-1):
+        data = json.dumps(data, indent=None).encode('utf-8')
+        #print(data)
+        #print("inviato")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(('logstash', 5000))
+        sock.sendall(data)
+        sock.close()
 
 
 def jsonModifier(jsonData, pilotsNumber,recapBool):
@@ -76,7 +68,7 @@ def jsonModifier(jsonData, pilotsNumber,recapBool):
     else:
         jsonData = jsonData["M"][0]["A"][1]["Lines"][str(pilotsNumber)]
         jsonData["PilotNumber"]=pilotsNumber
-        
+        jsonData = toSeconds(jsonData)
     return jsonData
 
 def makePilotList(pilotsRaw):
@@ -89,7 +81,6 @@ def makePilotList(pilotsRaw):
             pilots.append(int(pilotsRaw[i]["permanentNumber"]))
     return pilots
 
-
 def getPilotsData():
     dbUrl = "http://ergast.com/api/f1/2023/drivers.json"
     PilotData = req.get(dbUrl)
@@ -98,6 +89,27 @@ def getPilotsData():
     pilotList = makePilotList(PilotJson)
 
     return pilotList
+
+def checkWeather(data):
+    if data["M"][0]["A"][0] == "WeatherData":
+        sendToLogstash2(data["M"][0]["A"][1])
+        return True
+    else:
+        return False
+
+#def checkRaceControlMessages(data):
+#    if data["M"][0]["A"][0] == "RaceControlMessages":
+#        sendToLogstash2(data["M"][0]["A"][1]["Messages"])
+#        return True
+#    else:
+#        return False
+    
+def checkGapTimeData(data):
+    data = str(data["M"][0]["A"][1])
+    if data.find("GapToLeader") != -1:
+        return True
+    else:
+        return False            
 
 def sender(data, pilotsNumbers):
     try:
@@ -115,6 +127,7 @@ def sender(data, pilotsNumbers):
         if dataString.find("'R'") == -1 and keys.find("'"+str(pilotNumber)+"'") != -1 :
             pilotinfo=jsonModifier(data,pilotsNumber=pilotNumber,recapBool=False)
             if checkGapTimeData(data):
+
                 sendToLogstash3(pilotinfo)
             #print("mando  " + str(pilotinfo))
             else:
@@ -135,10 +148,6 @@ def producer(jsondata, pilotsNumbers):
 
             else:
                 sender(jsond,pilotsNumbers)
-
-
-
-
 
 
 
@@ -175,7 +184,7 @@ async def connectwebs(token, cookie):
     subscription={
 				"H": "Streaming",
 				"M": "Subscribe",
-				"A": [["WeatherData", "TrackStatus","RaceControlMessages","TimingData"]],
+				"A": [["WeatherData","TimingData"]],
 				"I": 2
 			}
     await connection.send(json.dumps(subscription))
@@ -183,7 +192,7 @@ async def connectwebs(token, cookie):
 
 
 async def main():
-    file= open("rawSpain.json","w")
+    file= open("rawData.json","w")
     file.close()
     
     testLogstash()
