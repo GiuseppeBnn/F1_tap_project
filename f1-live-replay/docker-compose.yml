@@ -39,11 +39,11 @@ services:
       - "8081:8081"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=6G
-      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_CORES=1
       - SPARK_WORKER_WEBUI_PORT=8081
       - SPARK_DRIVER_MEMORY=4G
-      - SPARK_EXECUTOR_MEMORY=6G
+      - SPARK_EXECUTOR_MEMORY=3G
       - SPARK_WORKLOAD=worker
 
 
@@ -57,46 +57,46 @@ services:
       - "8082:8082"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-      - SPARK_WORKER_MEMORY=6G
-      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_CORES=1
       - SPARK_WORKER_WEBUI_PORT=8082
       - SPARK_DRIVER_MEMORY=4G
-      - SPARK_EXECUTOR_MEMORY=6G
+      - SPARK_EXECUTOR_MEMORY=3G
       - SPARK_WORKLOAD=worker
       
-  #spark-worker3:
-  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-  #  container_name: spark-worker3
+  spark-worker3:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker3
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8083:8083"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_WEBUI_PORT=8083  
+      - SPARK_DRIVER_MEMORY=3G
+      - SPARK_EXECUTOR_MEMORY=3G
+      - SPARK_WORKLOAD=worker
 #
-  #  depends_on:
-  #    - spark-master
-  #  ports:
-  #    - "8083:8083"
-  #  environment:
-  #    - "SPARK_MASTER=spark://spark-master:7077"
-  #    - SPARK_WORKER_MEMORY=3G
-  #    - SPARK_WORKER_CORES=2
-  #    - SPARK_WORKER_WEBUI_PORT=8083  
-  #    - SPARK_DRIVER_MEMORY=3G
-  #    - SPARK_EXECUTOR_MEMORY=3G
-  #    - SPARK_WORKLOAD=worker
-#
-  #spark-worker4:
-  #  image: bde2020/spark-worker:3.3.0-hadoop3.3
-  #  container_name: spark-worker4
-#
-  #  depends_on:
-  #    - spark-master
-  #  ports:
-  #    - "8084:8084"
-  #  environment:
-  #    - "SPARK_MASTER=spark://spark-master:7077"
-  #    - SPARK_WORKER_MEMORY=3G
-  #    - SPARK_WORKER_CORES=2
-  #    - SPARK_WORKER_WEBUI_PORT=8084 
-  #    - SPARK_DRIVER_MEMORY=3G
-  #    - SPARK_EXECUTOR_MEMORY=3G
-  #    - SPARK_WORKLOAD=worker
+  spark-worker4:
+    image: bde2020/spark-worker:3.3.0-hadoop3.3
+    container_name: spark-worker4
+
+    depends_on:
+      - spark-master
+    ports:
+      - "8084:8084"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+      - SPARK_WORKER_MEMORY=3G
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_WEBUI_PORT=8084 
+      - SPARK_DRIVER_MEMORY=4G
+      - SPARK_EXECUTOR_MEMORY=3G
+      - SPARK_WORKLOAD=worker
   #-------------------------------#
   # 🖥️ Zookeeper-service          #
   #-------------------------------#
