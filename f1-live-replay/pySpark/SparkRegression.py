@@ -133,6 +133,13 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
 def main():
     global pipeline
 
+
+    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
+    lr = LinearRegression(featuresCol="features",
+                          regParam=0.01, labelCol="Seconds", maxIter=6)
+    pipeline = Pipeline(stages=[vectorAssembler, lr])
+    print("Pipeline creata"+str(type(pipeline)))
+
     spark = SparkSession.builder \
         .appName("SparkF1") \
         .config("spark.sql.shuffle.partitions", "8")  \
@@ -151,13 +158,7 @@ def main():
         .option("subscribe", "LiveTimingData") \
         .option("startingOffsets", "latest") \
         .load()
-        
-    
-    vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
-    lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=6)
-    pipeline = Pipeline(stages=[vectorAssembler, lr])
-    print("Pipeline creata"+str(type(pipeline)))
+
 
     #opzione per leggere da kafka da confluent cloud
     # df = (spark.readStream
@@ -174,9 +175,7 @@ def main():
     #                .option("kafka.session.timeout.ms", "10000")
     #                .load() )
 
-    df2 = df.select(col("value").cast("string").alias("json"))
-
-    laptime_df = df2.select(
+    df2 = df.select(col("value").cast("string").alias("json")).select(
         get_json_object("json", "$.TimingData.PilotNumber").cast(
             IntegerType()).alias("PilotNumber"),
         get_json_object("json", "$.TimingData.NumberOfLaps").cast(
@@ -186,9 +185,8 @@ def main():
         get_json_object("json", "$.@timestamp").alias("@timestamp")   
 
     ).where("Lap is not null and Seconds is not null")
-
-    laptime_df = laptime_df.repartition("PilotNumber")
-    laptime_query = laptime_df.writeStream\
+    df.unpersist()
+    laptime_query = df2.writeStream\
         .outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
 
