@@ -143,7 +143,8 @@ def main():
         .option("maxOffsetsPerTrigger", "10") \
         .option("subscribe", "LiveTimingData") \
         .option("startingOffsets", "latest") \
-        .load()
+        .load()\
+        .trigger(processingTime='1 seconds')
     
 
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
