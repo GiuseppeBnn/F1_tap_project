@@ -128,7 +128,7 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
             #pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
             linearRegression(pn)
             sendToES(df2, 2)
-        df.unpersist()  
+    df.unpersist()  
 
 def main():
     global pipeline
