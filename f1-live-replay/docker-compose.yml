@@ -105,7 +105,7 @@ services:
     depends_on:
       - spark-master
     ports:
-      - "8084:8084"
+      - "8085:8085"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
       - SPARK_WORKER_MEMORY=3G
