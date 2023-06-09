@@ -47,7 +47,7 @@ def linearRegression(pilotNumber):
 
         model = pilotModels[pilotNumber]
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
-        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cash()
+        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cache()
         predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType())).cache()
         NextLap_df.unpersist()
 
