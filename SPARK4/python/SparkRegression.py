@@ -24,13 +24,16 @@ prediction_schema = StructType([
     StructField("PilotN", IntegerType(), True),
     StructField("Lap", IntegerType(), True)
 ])
-
+#crea un dict di modelli di MLlib vuoti per ogni pilota
 def preparePilotModels():
     pilots=getPilotsData()
     global pilotModels
     for pilot in pilots:
         pilotModels[pilot] = 0
-
+#applica la regressione lineare ai tempi del pilota pilotNumber e invia i risultati a ES
+#la regressione viene applicata ogni 5 giri tranne i primi 5
+# inoltre viene applicata se il modello non è stato ancora creato
+# aggiunge anche il timestamp  
 def linearRegression(pilotNumber):
     global pilotDataframes
     global pipeline
@@ -39,7 +42,7 @@ def linearRegression(pilotNumber):
     if df.count() > 0:
         NextLap = df.agg(max("Lap")).collect()[0][0] + 1
         #df.show()
-        if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<4):
+        if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<6):
             pilotModels[pilotNumber] = pipeline.fit(df)        
 
         model = pilotModels[pilotNumber]
@@ -53,7 +56,8 @@ def linearRegression(pilotNumber):
         #predictions.show()
         sendToES(predictions, 1)
         
-
+#crea una lista di piloti
+#viene sostituito il numero del 33 (Verstappen) con 1 (perchè db non aggiornato bene)
 def makePilotList(pilotsRaw):
 
     pilots = []
@@ -64,7 +68,7 @@ def makePilotList(pilotsRaw):
             pilots.append(int(pilotsRaw[i]["permanentNumber"]))
     return pilots
 
-
+#ottiene i dati dei piloti dal db
 def getPilotsData():
     dbUrl = "http://ergast.com/api/f1/2023/drivers.json"
     PilotData = req.get(dbUrl)
@@ -74,7 +78,7 @@ def getPilotsData():
 
     return pilotList
 
-
+#crea un dict di dataframe vuoti per ogni pilota
 def preparePilotsDataframes():
     pilotList = getPilotsData()
     global pilotDataframes
@@ -84,7 +88,9 @@ def preparePilotsDataframes():
             session.sparkContext.emptyRDD(), laptime_schema)
         
 
-
+ #invia i dati a elasticsearch in formato json in base al parametro choose
+ #choose=1 invia i dati di predizione
+ #choose=2 invia i dati di lastlaptime
 def sendToES(data : DataFrame, choose: int):
     global es
     if (choose == 1):
@@ -102,6 +108,10 @@ def sendToES(data : DataFrame, choose: int):
             es.index(index="lastlaptimes", body=d)
     
 
+#aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
+#viene in particolare aggiornato il dict dei dataframe con gli ultimi 5 giri e messo in cache
+#la cache permette di risolvere i problemi di performance dovuti al fatto che i dataframe vengono
+#ricreati ad ogni batch
 
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
@@ -123,18 +133,15 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
 def main():
     global pipeline
 
-
     spark = SparkSession.builder \
         .appName("SparkF1") \
         .config("spark.sql.shuffle.partitions", "8")  \
         .getOrCreate()
-    
 
     spark.sparkContext.setLogLevel("WARN")
 
     preparePilotsDataframes()
     preparePilotModels()
-
 
     df = spark \
         .readStream \
@@ -144,15 +151,15 @@ def main():
         .option("subscribe", "LiveTimingData") \
         .option("startingOffsets", "latest") \
         .load()\
-        .trigger(processingTime='1 seconds')
+        .trigger(processingTime='2 seconds')
     
-
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
                           regParam=0.01, labelCol="Seconds", maxIter=6)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("Pipeline creata"+str(type(pipeline)))
 
+    #opzione per leggere da kafka da confluent cloud
     # df = (spark.readStream
     #                .format("kafka")
     #                .option("kafka.bootstrap.servers", "pkc-4nmjv.francecentral.azure.confluent.cloud:9092")
@@ -180,13 +187,7 @@ def main():
 
     ).where("Lap is not null and Seconds is not null")
 
-    #laptime_query = laptime_df.writeStream\
-    #    .outputMode("append")\
-    #    .foreachBatch(updateLapTimeTotal_df)\
-    #    .start()
-
     laptime_df = laptime_df.repartition("PilotNumber")
-
     laptime_query = laptime_df.writeStream.outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
 
