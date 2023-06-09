@@ -189,7 +189,6 @@ def main():
 
     laptime_df = laptime_df.repartition("PilotNumber")
     laptime_query = laptime_df.writeStream\
-        .trigger(processingTime='2 seconds')\
         .outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
 
