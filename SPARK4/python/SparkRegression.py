@@ -106,15 +106,19 @@ def sendToES(data : DataFrame, choose: int):
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
     if df.count() > 0:
+        df=df.cache()
         print("New batch arrived")
-        for row in df.rdd.collect():
+        rows=df.rdd.collect()
+        for row in rows:
             pn=row.PilotNumber
+            old_df=pilotDataframes[pn]
             df2=df.filter(df.PilotNumber==pn)
-            df2=df2.repartition(3)
-            pilotDataframes[pn] = pilotDataframes[pn].union(df2).repartition(3)
-            pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
+            pilotDataframes[pn] = old_df.union(df2).orderBy("Lap", ascending=False).limit(5).cache()
+            old_df.unpersist()
+            #pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
             linearRegression(pn)
             sendToES(df2, 2)
+        df.unpersist()  
 
 def main():
     global pipeline
@@ -122,7 +126,7 @@ def main():
 
     spark = SparkSession.builder \
         .appName("SparkF1") \
-        .config("spark.sql.shuffle.partitions", "4")  \
+        .config("spark.sql.shuffle.partitions", "5")  \
         .getOrCreate()
     
 
