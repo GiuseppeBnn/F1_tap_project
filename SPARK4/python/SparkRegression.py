@@ -150,8 +150,8 @@ def main():
         .option("maxOffsetsPerTrigger", "10") \
         .option("subscribe", "LiveTimingData") \
         .option("startingOffsets", "latest") \
-        .load()\
-        .trigger(processingTime='2 seconds')
+        .load()
+        
     
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
@@ -188,7 +188,9 @@ def main():
     ).where("Lap is not null and Seconds is not null")
 
     laptime_df = laptime_df.repartition("PilotNumber")
-    laptime_query = laptime_df.writeStream.outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
+    laptime_query = laptime_df.writeStream\
+        .trigger(processingTime='2 seconds')\
+        .outputMode("append").foreachBatch(updateLapTimeTotal_df).start()
     laptime_query.awaitTermination()
 
 if __name__ == "__main__":
