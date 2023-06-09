@@ -47,12 +47,11 @@ def linearRegression(pilotNumber):
 
         model = pilotModels[pilotNumber]
         spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
-        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema)
-        predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType()))
+        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cash()
+        predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType())).cache()
+        NextLap_df.unpersist()
 
-        predictions = predictions.withColumnRenamed("Lap", "NextLap")
-
-        predictions = predictions.withColumn("@timestamp", current_timestamp())
+        predictions = predictions.withColumnRenamed("Lap", "NextLap").withColumn("@timestamp", current_timestamp())
         #predictions.show()
         sendToES(predictions, 1)
         
@@ -95,6 +94,7 @@ def sendToES(data : DataFrame, choose: int):
     global es
     if (choose == 1):
         data_json = data.toJSON().collect()
+        data.unpersist()
         print(data_json)
         for d in data_json:
             # sendo to elasticsearch with d as float
