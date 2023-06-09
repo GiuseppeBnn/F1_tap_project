@@ -13,7 +13,7 @@ services:
         condition: service_healthy
     container_name: pyspark
     volumes:
-      - ./python/SparkRegression.py:/home/jovyan/SparkRegression.py
+      - ./pySpark/SparkRegression.py:/home/jovyan/SparkRegression.py
     ports:
       - "4040:4040"  
     
