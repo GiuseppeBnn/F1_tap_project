@@ -104,7 +104,7 @@ def sendToES(data, choose: int):
         #converto in json e invio
         data_json = data.to_json(orient="records")
         #print(data_json)
-        es.index(index="lastlaptimes", body=d)
+        es.index(index="lastlaptimes", body=data_json)
     
 
 #aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
