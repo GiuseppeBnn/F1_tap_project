@@ -145,7 +145,7 @@ def main():
 
     vectorAssembler = VectorAssembler(inputCols=["Lap"], outputCol="features", handleInvalid="skip")
     lr = LinearRegression(featuresCol="features",
-                          regParam=0.01, labelCol="Seconds", maxIter=6)
+                          regParam=0.01, labelCol="Seconds", maxIter=20)
     pipeline = Pipeline(stages=[vectorAssembler, lr])
     print("Pipeline creata"+str(type(pipeline)))
 
