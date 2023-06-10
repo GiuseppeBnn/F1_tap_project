@@ -103,8 +103,8 @@ def sendToES(data, choose: int):
         #in questo caso data è un dataframe pandas
         #converto in json e invio
         data_json = data.to_json(orient="records")
-        #print(data_json)
-        es.index(index="lastlaptimes", document=data_json[0])
+        print(data_json[0], type(data_json))
+        #es.index(index="lastlaptimes", document=data_json[0])
     
 
 #aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
@@ -123,8 +123,9 @@ def updateLapTimeTotal_df(df: DataFrame, epoch_id):
             old_df = pilotDataframes[pn]
             df2 = pandas_df[pandas_df['PilotNumber'] == pn]
             pilotDataframes[pn] = pd.concat([old_df, df2]).sort_values('Lap', ascending=False).head(10).copy()
-            linearRegression(pn)
             sendToES(df2, 2)
+            linearRegression(pn)
+        
 
 def main():
     global pipeline
