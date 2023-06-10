@@ -42,8 +42,6 @@ def linearRegression(pilotNumber):
     
     df = pilotDataframes[pilotNumber]
     next_lap = df["Lap"].max() + 1
-    NextLap = pd.DataFrame({"NextLap": [next_lap]})
-
     spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
     #stampa pandas dataframe
     print(df)
@@ -51,12 +49,12 @@ def linearRegression(pilotNumber):
 
     #NextLap = df.agg(max("Lap")).collect()[0][0] + 1
     #df.show()
-    if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<6):
+    if(int(next_lap)%5==0 or pilotModels[pilotNumber]==0 or int(next_lap)<6):
         df= spark_session.createDataFrame(df, laptime_schema)
         pilotModels[pilotNumber] = pipeline.fit(df)   
 
     model = pilotModels[pilotNumber]
-    NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cache()
+    NextLap_df = spark_session.createDataFrame([(pilotNumber, next_lap)], prediction_schema).cache()
     predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType())).cache()
     NextLap_df.unpersist()
     predictions = predictions.withColumnRenamed("Lap", "NextLap").withColumn("@timestamp", current_timestamp())
