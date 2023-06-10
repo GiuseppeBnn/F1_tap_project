@@ -104,10 +104,10 @@ def sendToES(data, choose: int):
         data_json = data.to_json(orient="records")
         #rimuove dal json il carattere iniziale e finale messi dalla funzione to_json
         data_json = data_json[1:-1]
-        print(data_json, type(data_json),"di seguito la loads")
-        data_json=json.loads(data_json)
-        print(str(data_json), type(data_json))
-        #es.index(index="lastlaptimes", document=data_json[0])
+        #print(data_json, type(data_json),"di seguito la loads")
+        #data_json=json.loads(data_json)
+        #print(str(data_json), type(data_json))
+        es.index(index="lastlaptimes", document=data_json)
     
 
 #aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
