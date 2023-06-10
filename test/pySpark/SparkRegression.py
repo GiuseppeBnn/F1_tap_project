@@ -95,7 +95,7 @@ def sendToES(data, choose: int):
     if (choose == 1):
         data_json = data.toJSON().collect()
         data.unpersist()
-        #print(data_json)
+        print(data_json)
         for d in data_json:
             # sendo to elasticsearch with d as float
             es.index(index="predictions", document=d)
@@ -104,8 +104,9 @@ def sendToES(data, choose: int):
         data_json = data.to_json(orient="records")
         #rimuove dal json il carattere iniziale e finale messi dalla funzione to_json
         data_json = data_json[1:-1]
-        #print(data_json, type(data_json))
-        es.index(index="lastlaptimes", document=data_json[0])
+        print(data_json, type(data_json),"di seguito la dump")
+        print (json.dump(data_json))
+        #es.index(index="lastlaptimes", document=data_json[0])
     
 
 #aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
