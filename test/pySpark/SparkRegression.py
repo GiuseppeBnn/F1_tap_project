@@ -101,12 +101,11 @@ def sendToES(data, choose: int):
             es.index(index="predictions", document=d)
     if (choose == 2):
         #in questo caso data è un dataframe pandas
-        #converto in json e invio
         data_json = data.to_json(orient="records")
-        #rimuovi da data_json il carattere iniziale e finale
+        #rimuove dal json il carattere iniziale e finale messi dalla funzione to_json
         data_json = data_json[1:-1]
-        print(data_json, type(data_json))
-        #es.index(index="lastlaptimes", document=data_json[0])
+        #print(data_json, type(data_json))
+        es.index(index="lastlaptimes", document=data_json[0])
     
 
 #aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
