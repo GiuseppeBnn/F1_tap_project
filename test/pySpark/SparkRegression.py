@@ -1,5 +1,5 @@
 from pyspark.sql.functions import *
-from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType, TimestampType
+from pyspark.sql.types import StructType, StructField, IntegerType, FloatType, TimestampType
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
@@ -90,11 +90,9 @@ def getPilotsData():
 def preparePilotsDataframes():
     pilotList = getPilotsData()
     global pilotDataframes
-    session=SparkSession.builder.appName("SparkF1").getOrCreate()
     for i in range(20):
-        pilotDataframes[pilotList[i]] = session.createDataFrame(
-            session.sparkContext.emptyRDD(), laptime_schema)
-        
+        pilotDataframes[pilotList[i]] = pd.DataFrame(
+            columns=["PilotNumber", "Lap", "Seconds"])
 
  #invia i dati a elasticsearch in formato json in base al parametro choose
  #choose=1 invia i dati di predizione
@@ -122,7 +120,7 @@ def sendToES(data : DataFrame, choose: int):
 #la cache permette di risolvere i problemi di performance dovuti al fatto che i dataframe vengono
 #ricreati ad ogni batch
 
-def updateLapTimeTotal_df(df : DataFrame, epoch_id):
+def updateLapTimeTotal_df(df: DataFrame, epoch_id):
     global pilotDataframes
     if df.count() > 0:
     #    df=df.cache()
@@ -139,13 +137,13 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     #        sendToES(df2, 2)
     #df.unpersist()  
 
-        df=df.toPandas()    
+        pandas_df=df.toPandas()    
         print("New batch arrived")
         
-        for _, row in df.iterrows():
+        for _, row in pandas_df.iterrows():
             pn = row['PilotNumber']
             old_df = pilotDataframes[pn]
-            df2 = df[df['PilotNumber'] == pn]
+            df2 = pandas_df[pandas_df['PilotNumber'] == pn]
             pilotDataframes[pn] = pd.concat([old_df, df2]).sort_values('Lap', ascending=False).head(5).copy()
             linearRegression(pn)
             #sendToES(df2, 2)
