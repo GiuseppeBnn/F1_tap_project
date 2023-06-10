@@ -41,7 +41,7 @@ def linearRegression(pilotNumber):
     global pilotModels
     
     df = pilotDataframes[pilotNumber]
-    next_lap = df.agg({"Lap": "max"}).collect()[0][0] + 1
+    next_lap = df["Lap"].max() + 1
     next_lap_scalar = next_lap.item()
     NextLap = pd.DataFrame({"NextLap": [next_lap_scalar]})
 
