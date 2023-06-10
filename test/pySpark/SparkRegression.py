@@ -42,8 +42,7 @@ def linearRegression(pilotNumber):
     
     df = pilotDataframes[pilotNumber]
     next_lap = df["Lap"].max() + 1
-    next_lap_scalar = next_lap.item()
-    NextLap = pd.DataFrame({"NextLap": [next_lap_scalar]})
+    NextLap = pd.DataFrame({"NextLap": [next_lap]})
 
     spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
     #stampa pandas dataframe
