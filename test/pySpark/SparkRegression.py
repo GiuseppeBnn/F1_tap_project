@@ -105,8 +105,10 @@ def sendToES(data : DataFrame, choose: int):
         #in questo caso data è un dataframe pandas
         #converto in json e invio
         data_json = data.to_json(orient="records")
-        for d in data_json:
-            print(d, type(d))
+        print(data_json)
+        
+        #for d in data_json:
+            
             #es.index(index="lastlaptimes", body=d)
     
 
