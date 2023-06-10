@@ -7,6 +7,7 @@ from pyspark.ml import Pipeline
 import requests as req
 import json
 import elasticsearch
+import pandas as pd
 
 
 es = elasticsearch.Elasticsearch(hosts=["http://elasticsearch:9200"])
@@ -38,19 +39,30 @@ def linearRegression(pilotNumber):
     global pilotDataframes
     global pipeline
     global pilotModels
+    
     df = pilotDataframes[pilotNumber]
-    NextLap = df.agg(max("Lap")).collect()[0][0] + 1
+    next_lap = df.agg({"Lap": "max"}).collect()[0][0] + 1
+    next_lap_scalar = next_lap.item()
+    NextLap = pd.DataFrame({"NextLap": [next_lap_scalar]})
+
+    spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
+    #stampa pandas dataframe
+    print(df)
+
+
+    #NextLap = df.agg(max("Lap")).collect()[0][0] + 1
     #df.show()
     if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<6):
-        pilotModels[pilotNumber] = pipeline.fit(df)        
+        df= spark_session.createDataFrame(df, laptime_schema)
+        pilotModels[pilotNumber] = pipeline.fit(df)   
+
     model = pilotModels[pilotNumber]
-    spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
     NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cache()
     predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType())).cache()
     NextLap_df.unpersist()
     predictions = predictions.withColumnRenamed("Lap", "NextLap").withColumn("@timestamp", current_timestamp())
-    #predictions.show()
-    sendToES(predictions, 1)
+    predictions.show()
+    #sendToES(predictions, 1)
         
 #crea una lista di piloti
 #viene sostituito il numero del 33 (Verstappen) con 1 (perchè db non aggiornato bene)
@@ -113,19 +125,30 @@ def sendToES(data : DataFrame, choose: int):
 def updateLapTimeTotal_df(df : DataFrame, epoch_id):
     global pilotDataframes
     if df.count() > 0:
-        df=df.cache()
+    #    df=df.cache()
+    #    print("New batch arrived")
+    #    rows=df.rdd.collect()
+    #    for row in rows:
+    #        pn=row.PilotNumber
+    #        old_df=pilotDataframes[pn]
+    #        df2=df.filter(df.PilotNumber==pn)
+    #        pilotDataframes[pn] = old_df.union(df2).orderBy("Lap", ascending=False).limit(5).cache()
+    #        #old_df.unpersist()
+    #        #pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
+    #        linearRegression(pn)
+    #        sendToES(df2, 2)
+    #df.unpersist()  
+
+        df=df.toPandas()    
         print("New batch arrived")
-        rows=df.rdd.collect()
-        for row in rows:
-            pn=row.PilotNumber
-            old_df=pilotDataframes[pn]
-            df2=df.filter(df.PilotNumber==pn)
-            pilotDataframes[pn] = old_df.union(df2).orderBy("Lap", ascending=False).limit(5).cache()
-            #old_df.unpersist()
-            #pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
+        
+        for _, row in df.iterrows():
+            pn = row['PilotNumber']
+            old_df = pilotDataframes[pn]
+            df2 = df[df['PilotNumber'] == pn]
+            pilotDataframes[pn] = pd.concat([old_df, df2]).sort_values('Lap', ascending=False).head(5).copy()
             linearRegression(pn)
-            sendToES(df2, 2)
-    df.unpersist()  
+            #sendToES(df2, 2)
 
 def main():
     global pipeline
