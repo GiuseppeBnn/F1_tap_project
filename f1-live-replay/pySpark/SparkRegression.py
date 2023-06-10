@@ -39,21 +39,18 @@ def linearRegression(pilotNumber):
     global pipeline
     global pilotModels
     df = pilotDataframes[pilotNumber]
-    if df.count() > 0:
-        NextLap = df.agg(max("Lap")).collect()[0][0] + 1
-        #df.show()
-        if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<6):
-            pilotModels[pilotNumber] = pipeline.fit(df)        
-
-        model = pilotModels[pilotNumber]
-        spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
-        NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cache()
-        predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType())).cache()
-        NextLap_df.unpersist()
-
-        predictions = predictions.withColumnRenamed("Lap", "NextLap").withColumn("@timestamp", current_timestamp())
-        #predictions.show()
-        sendToES(predictions, 1)
+    NextLap = df.agg(max("Lap")).collect()[0][0] + 1
+    #df.show()
+    if(int(NextLap)%5==0 or pilotModels[pilotNumber]==0 or int(NextLap)<6):
+        pilotModels[pilotNumber] = pipeline.fit(df)        
+    model = pilotModels[pilotNumber]
+    spark_session = SparkSession.builder.appName("SparkF1").getOrCreate()
+    NextLap_df = spark_session.createDataFrame([(pilotNumber, NextLap)], prediction_schema).cache()
+    predictions = model.transform(NextLap_df).withColumn("prediction", col("prediction").cast(FloatType())).cache()
+    NextLap_df.unpersist()
+    predictions = predictions.withColumnRenamed("Lap", "NextLap").withColumn("@timestamp", current_timestamp())
+    #predictions.show()
+    sendToES(predictions, 1)
         
 #crea una lista di piloti
 #viene sostituito il numero del 33 (Verstappen) con 1 (perchè db non aggiornato bene)
