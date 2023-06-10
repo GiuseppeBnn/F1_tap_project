@@ -95,18 +95,15 @@ def sendToES(data, choose: int):
     if (choose == 1):
         data_json = data.toJSON().collect()
         data.unpersist()
-        print(data_json)
+        #print(data_json)
         for d in data_json:
             # sendo to elasticsearch with d as float
             es.index(index="predictions", document=d)
     if (choose == 2):
         #in questo caso data è un dataframe pandas
         data_json = data.to_json(orient="records")
-        #rimuove dal json il carattere iniziale e finale messi dalla funzione to_json
+        #rimuove dal json il carattere iniziale e finale messi dalla funzione to_json (slice)
         data_json = data_json[1:-1]
-        #print(data_json, type(data_json),"di seguito la loads")
-        #data_json=json.loads(data_json)
-        #print(str(data_json), type(data_json))
         es.index(index="lastlaptimes", document=data_json)
     
 
