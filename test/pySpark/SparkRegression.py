@@ -98,13 +98,13 @@ def sendToES(data, choose: int):
         #print(data_json)
         for d in data_json:
             # sendo to elasticsearch with d as float
-            es.index(index="predictions", body=d)
+            es.index(index="predictions", document=d)
     if (choose == 2):
         #in questo caso data è un dataframe pandas
         #converto in json e invio
         data_json = data.to_json(orient="records")
-        print(data_json)
-        #es.index(index="lastlaptimes", body=data_json)
+        #print(data_json)
+        es.index(index="lastlaptimes", document=data_json[0])
     
 
 #aggiorna l'ultimo giro dei piloti man mano che questi completano un giro
