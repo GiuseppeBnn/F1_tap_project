@@ -1,5 +1,5 @@
 from pyspark.sql.functions import *
-from pyspark.sql.types import StructType, StructField, IntegerType, FloatType, TimestampType
+from pyspark.sql.types import StructType, StructField, IntegerType, FloatType, StringType
 from pyspark.sql import SparkSession
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
@@ -19,7 +19,7 @@ laptime_schema = StructType([
     StructField("PilotNumber", IntegerType(), True),
     StructField("Lap", IntegerType(), True),
     StructField("Seconds", FloatType(), True),
-    StructField("@timestamp", TimestampType(), True)
+    StructField("@timestamp", StringType(), True)
 ])
 prediction_schema = StructType([
     StructField("PilotN", IntegerType(), True),
