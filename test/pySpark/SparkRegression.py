@@ -90,7 +90,7 @@ def preparePilotsDataframes():
  #invia i dati a elasticsearch in formato json in base al parametro choose
  #choose=1 invia i dati di predizione
  #choose=2 invia i dati di lastlaptime
-def sendToES(data, choose: int):
+def sendToES(data: pd.DataFrame, choose: int):
     global es
     if (choose == 1):
         data_json = data.toJSON().collect()
@@ -102,7 +102,7 @@ def sendToES(data, choose: int):
     if (choose == 2):
         #in questo caso data è un dataframe pandas
         #converto in json e invio
-        data_json = list(data.to_json(orient="records"))
+        data_json = data.to_json(orient="records", default_handler=list)
         print(data_json[0], type(data_json))
         #es.index(index="lastlaptimes", document=data_json[0])
     
