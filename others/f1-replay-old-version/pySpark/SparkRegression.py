@@ -121,6 +121,10 @@ def updateLapTimeTotal_df(df : DataFrame, epoch_id):
             old_df=pilotDataframes[pn]
             df2=df.filter(df.PilotNumber==pn)
             pilotDataframes[pn] = old_df.union(df2).orderBy("Lap", ascending=False).limit(5).cache()
+            #togliendo l'unpersist si risolve il problema del rallentamento in parte dato che 
+            # si mantiene ogni fase in RAM
+            #ma si rischia di saturare la RAM velocemente ad ogni batch
+            
             old_df.unpersist()
             #pilotDataframes[pn]=(pilotDataframes[pn].orderBy("Lap", ascending=False).limit(5))
             linearRegression(pn)
