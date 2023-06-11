@@ -34,7 +34,7 @@ e successivamente
 
 
 ## Dashboard
-In entrambi i casi, per visualizzare la dashboard, apri il browser e vai all'indirizzo: http://localhost:5601  (o l'indirizzo del server se eseguito in cloud e porta 5601)
+In entrambi i casi, per visualizzare la dashboard, aprire il browser e amdare all'indirizzo: http://localhost:5601  (o l'indirizzo del server se eseguito in cloud e porta 5601), importare il file DASH8 in saved objects e selezionare la dashboard f1 dash. 
 
 
 
