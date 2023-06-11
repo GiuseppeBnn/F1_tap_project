@@ -27,7 +27,7 @@ services:
       - INIT_DAEMON_STEP=setup_spark
       - SPARK_MASTER_WEBUI_PORT=8090
       - SPARK_WORKLOAD=master
-      - SPARK_DRIVER_MEMORY=3g
+      - SPARK_DRIVER_MEMORY=4g
 
   spark-worker:
     image: bde2020/spark-worker:3.3.0-hadoop3.3
