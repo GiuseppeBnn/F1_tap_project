@@ -11,6 +11,8 @@ services:
         condition: service_healthy
       broker:
         condition: service_healthy
+      spark-master:
+        condition: service_healthy  
     container_name: pyspark
     volumes:
       - ./pySpark/SparkRegression.py:/home/jovyan/SparkRegression.py
@@ -28,7 +30,11 @@ services:
       - SPARK_MASTER_WEBUI_PORT=8090
       - SPARK_WORKLOAD=master
       - SPARK_DRIVER_MEMORY=3g
-
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost:8090"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
   spark-worker:
     image: bde2020/spark-worker:3.3.0-hadoop3.3
     container_name: spark-worker
